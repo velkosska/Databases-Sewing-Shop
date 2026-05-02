@@ -1,35 +1,46 @@
 from django.db import models
+from django.utils import timezone
 
 
 class Customer(models.Model):
-    full_name = models.CharField(max_length=150)
+    first_name = models.CharField(max_length=100, default="")
+    last_name = models.CharField(max_length=100, default="")
     phone = models.CharField(max_length=30, blank=True, null=True)
     email = models.EmailField(max_length=150, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateField(auto_now_add=True)
 
     class Meta:
         db_table = "customer"
-        ordering = ["full_name"]
+        ordering = ["first_name", "last_name"]
         verbose_name = "Customer"
         verbose_name_plural = "Customers"
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
 
     def __str__(self):
         return self.full_name
 
 
 class Employee(models.Model):
-    full_name = models.CharField(max_length=150)
+    first_name = models.CharField(max_length=100, default="")
+    last_name = models.CharField(max_length=100, default="")
     role = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=30, blank=True, null=True)
-    active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = "employee"
-        ordering = ["full_name"]
+        ordering = ["first_name", "last_name"]
         verbose_name = "Employee"
         verbose_name_plural = "Employees"
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
 
     def __str__(self):
         return f"{self.full_name} ({self.role})"
@@ -37,10 +48,9 @@ class Employee(models.Model):
 
 class Material(models.Model):
     name = models.CharField(max_length=150)
-    type = models.CharField(max_length=100, blank=True, null=True)
     color = models.CharField(max_length=80, blank=True, null=True)
-    unit = models.CharField(max_length=30, blank=True, null=True)
-    stock_qty = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    stock_quantity = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
     class Meta:
         db_table = "material"
@@ -50,6 +60,20 @@ class Material(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.color})"
+
+
+class Catalogue(models.Model):
+    service = models.CharField(max_length=100)
+    base_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = "catalogue"
+        ordering = ["service"]
+        verbose_name = "Catalogue"
+        verbose_name_plural = "Catalogue"
+
+    def __str__(self):
+        return self.service
 
 
 class Order(models.Model):
@@ -63,7 +87,8 @@ class Order(models.Model):
     order_date = models.DateField(auto_now_add=True)
     due_date = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=50, choices=Status.choices, default=Status.PENDING)
-    observations = models.TextField(blank=True, null=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = "orders"
@@ -77,10 +102,13 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    garment_type = models.CharField(max_length=100)
+    catalogue = models.ForeignKey(Catalogue, on_delete=models.PROTECT, related_name="order_items", blank=True, null=True)
+    garment_type = models.CharField(max_length=100, blank=True, null=True)
     color = models.CharField(max_length=80, blank=True, null=True)
     design_notes = models.TextField(blank=True, null=True)
     quantity = models.IntegerField(default=1)
+    status = models.CharField(max_length=50, default="pending")
+    final_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     materials = models.ManyToManyField(
         Material,
         through="OrderItemMaterial",
@@ -98,12 +126,22 @@ class OrderItem(models.Model):
 
 
 class Measurement(models.Model):
-    order_item = models.OneToOneField(OrderItem, on_delete=models.CASCADE, related_name="measurement")
+    customer = models.OneToOneField(
+        Customer,
+        on_delete=models.CASCADE,
+        related_name="measurement",
+        blank=True,
+        null=True,
+        db_constraint=False,
+    )
     chest = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
     waist = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-    hips = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-    length = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-    extra_notes = models.TextField(blank=True, null=True)
+    hip = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    shoulder = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    sleeve_length = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    inseam = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "measurement"
@@ -111,7 +149,7 @@ class Measurement(models.Model):
         verbose_name_plural = "Measurements"
 
     def __str__(self):
-        return f"Measurements for {self.order_item}"
+        return f"Measurements for {self.customer.full_name}"
 
 
 class WorkTicket(models.Model):
@@ -132,6 +170,7 @@ class WorkTicket(models.Model):
     priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.NORMAL)
     deadline = models.DateField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
 
     class Meta:
         db_table = "work_ticket"
@@ -177,14 +216,15 @@ class Delivery(models.Model):
         IN_STORE = "in_store", "In Store"
 
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="delivery")
-    delivery_date = models.DateField(blank=True, null=True)
-    method = models.CharField(max_length=80, choices=Method.choices, blank=True, null=True)
+    delivered_at = models.DateTimeField(blank=True, null=True)
+    delivery_method = models.CharField(max_length=50, choices=Method.choices, blank=True, null=True)
+    recipient_name = models.CharField(max_length=100, blank=True, null=True)
     delivered = models.BooleanField(default=False)
-    final_comments = models.TextField(blank=True, null=True)
+    comments = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = "delivery"
-        ordering = ["-delivery_date"]
+        ordering = ["-delivered_at"]
         verbose_name = "Delivery"
         verbose_name_plural = "Deliveries"
 

@@ -2,6 +2,7 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin, StackedInline, TabularInline
 
 from .models import (
+    Catalogue,
     Customer,
     Delivery,
     Employee,
@@ -15,12 +16,6 @@ from .models import (
 )
 
 
-class MeasurementInline(StackedInline):
-    model = Measurement
-    extra = 0
-    can_delete = False
-
-
 class OrderItemMaterialInline(TabularInline):
     model = OrderItemMaterial
     extra = 1
@@ -30,7 +25,7 @@ class OrderItemMaterialInline(TabularInline):
 class OrderItemInline(TabularInline):
     model = OrderItem
     extra = 1
-    fields = ["garment_type", "color", "quantity", "design_notes"]
+    fields = ["catalogue", "garment_type", "color", "quantity", "status", "final_price", "design_notes"]
     show_change_link = True
 
 
@@ -48,56 +43,61 @@ class DeliveryInline(StackedInline):
 
 @admin.register(Customer)
 class CustomerAdmin(ModelAdmin):
-    list_display = ["full_name", "phone", "email", "created_at"]
-    search_fields = ["full_name", "phone", "email"]
+    list_display = ["first_name", "last_name", "phone", "email", "created_at"]
+    search_fields = ["first_name", "last_name", "phone", "email"]
     list_filter = ["created_at"]
 
 
 @admin.register(Employee)
 class EmployeeAdmin(ModelAdmin):
-    list_display = ["full_name", "role", "phone", "active"]
-    search_fields = ["full_name", "role"]
-    list_filter = ["active", "role"]
+    list_display = ["first_name", "last_name", "role", "phone"]
+    search_fields = ["first_name", "last_name", "role"]
+    list_filter = ["role"]
 
 
 @admin.register(Material)
 class MaterialAdmin(ModelAdmin):
-    list_display = ["name", "type", "color", "unit", "stock_qty"]
-    search_fields = ["name", "type", "color"]
-    list_filter = ["type"]
+    list_display = ["name", "color", "unit_price", "stock_quantity"]
+    search_fields = ["name", "color"]
+
+
+@admin.register(Catalogue)
+class CatalogueAdmin(ModelAdmin):
+    list_display = ["service", "base_price"]
+    search_fields = ["service"]
 
 
 @admin.register(Order)
 class OrderAdmin(ModelAdmin):
-    list_display = ["id", "customer", "order_date", "due_date", "status"]
-    search_fields = ["customer__full_name"]
+    list_display = ["id", "customer", "order_date", "due_date", "status", "total_price"]
+    search_fields = ["customer__first_name", "customer__last_name"]
     list_filter = ["status", "order_date", "due_date"]
     ordering = ["-order_date"]
     inlines = [OrderItemInline, DeliveryInline]
     fieldsets = (
         ("Order Info", {"fields": ("customer", "due_date", "status")}),
-        ("Notes", {"fields": ("observations",)}),
+        ("Pricing & Notes", {"fields": ("total_price", "notes")}),
     )
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(ModelAdmin):
-    list_display = ["id", "order", "garment_type", "color", "quantity"]
-    search_fields = ["garment_type", "order__customer__full_name"]
-    list_filter = ["garment_type", "color"]
-    inlines = [MeasurementInline, OrderItemMaterialInline]
+    list_display = ["id", "order", "catalogue", "garment_type", "quantity", "status", "final_price"]
+    search_fields = ["garment_type", "catalogue__service", "order__customer__first_name", "order__customer__last_name"]
+    list_filter = ["catalogue", "status", "color"]
+    inlines = [OrderItemMaterialInline]
 
 
 @admin.register(Measurement)
 class MeasurementAdmin(ModelAdmin):
-    list_display = ["order_item", "chest", "waist", "hips", "length"]
-    search_fields = ["order_item__garment_type", "order_item__order__customer__full_name"]
+    list_display = ["customer", "chest", "waist", "hip", "shoulder", "sleeve_length", "inseam", "updated_at"]
+    search_fields = ["customer__first_name", "customer__last_name"]
 
 
 @admin.register(WorkTicket)
 class WorkTicketAdmin(ModelAdmin):
-    list_display = ["id", "order_item", "assigned_to", "status", "priority", "deadline"]
-    search_fields = ["order_item__garment_type", "assigned_to__full_name"]
+    list_display = ["id", "order_item", "assigned_to", "status", "priority", "deadline", "created_at"]
+    search_fields = ["order_item__garment_type", "assigned_to__first_name", "assigned_to__last_name"]
     list_filter = ["status", "priority", "deadline"]
     inlines = [ProductionStageInline]
 
@@ -111,6 +111,6 @@ class ProductionStageAdmin(ModelAdmin):
 
 @admin.register(Delivery)
 class DeliveryAdmin(ModelAdmin):
-    list_display = ["order", "delivery_date", "method", "delivered"]
-    search_fields = ["order__customer__full_name"]
-    list_filter = ["delivered", "method", "delivery_date"]
+    list_display = ["order", "delivered_at", "delivery_method", "recipient_name", "delivered"]
+    search_fields = ["order__customer__first_name", "order__customer__last_name", "recipient_name"]
+    list_filter = ["delivered", "delivery_method", "delivered_at"]
