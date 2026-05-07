@@ -1,372 +1,470 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sewing Shop Dashboard</title>
-    <style>
-        :root {
-            --bg: #f4f7fb;
-            --panel: #ffffff;
-            --panel-alt: #f8fafc;
-            --text: #111827;
-            --muted: #6b7280;
-            --border: #dbe3ec;
-            --brand: #202634;
-            --brand-soft: #e8edf7;
-            --danger: #dc2626;
-            --warning: #d97706;
-            --info: #2563eb;
-            --success: #16a34a;
-            --teal: #0d9488;
-            --gray: #6b7280;
-        }
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: Inter, Arial, sans-serif; background: var(--bg); color: var(--text); }
-        .wrap { max-width: 1280px; margin: 1.5rem auto; padding: 0 1rem; }
-        .header { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 1rem; }
-        .title-row { display: flex; align-items: center; gap: .6rem; }
-        h1 { margin: 0; font-size: 1.5rem; }
-        .live-badge { font-size: .75rem; color: #14532d; background: #dcfce7; border: 1px solid #86efac; border-radius: 999px; padding: .15rem .5rem; font-weight: 600; }
-        .header-right { display: flex; align-items: center; gap: .75rem; }
-        .timestamp { font-size: .85rem; color: var(--muted); }
-        .btn-primary { background: var(--brand); color: #fff; border: none; border-radius: 8px; padding: .55rem .85rem; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #fff; color: var(--brand); border: 1px solid #c6d2e3; border-radius: 8px; padding: .55rem .85rem; font-weight: 600; cursor: pointer; }
-        .cards { display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: .75rem; cursor: pointer; transition: .15s ease; }
-        .card:hover { border-color: #9db4d8; background: #f8fbff; transform: translateY(-1px); }
-        .card.active { border-color: #5677b5; background: var(--brand-soft); box-shadow: 0 0 0 1px #5677b5 inset; }
-        .card-label { font-size: .8rem; color: var(--muted); margin-bottom: .3rem; }
-        .card-value { font-size: 1.35rem; font-weight: 700; }
-        .card.overdue .card-label, .card.overdue .card-value { color: var(--danger); }
-        .toolbar { display: flex; gap: .5rem; margin-bottom: .8rem; align-items: center; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: .5rem; }
-        .input, .select { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .7rem; font-size: .9rem; }
-        .input { flex: 1; min-width: 220px; }
-        .toolbar .input { border-color: #cfd9e6; }
-        .toolbar .select { min-width: 210px; border-color: #cfd9e6; }
-        .table-meta { display: flex; justify-content: space-between; align-items: center; margin: .2rem 0 .6rem; color: var(--muted); font-size: .84rem; }
-        .table-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: .72rem .75rem; border-bottom: 1px solid #edf2f7; text-align: left; font-size: .9rem; }
-        thead th { background: #1f2937; color: #f9fafb; font-size: .82rem; font-weight: 600; white-space: nowrap; }
-        tbody tr:nth-child(even) { background: #fbfdff; }
-        tbody tr:hover { background: #f2f7ff; }
-        .sortable { cursor: pointer; user-select: none; }
-        .arrow { margin-left: .25rem; opacity: .6; }
-        .muted { color: var(--muted); }
-        .avatar { width: 28px; height: 28px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .72rem; font-weight: 700; margin-right: .5rem; }
-        .customer-cell { display: flex; align-items: center; }
-        .garment-cell { display: flex; align-items: center; gap: .45rem; }
-        .garment-dot { width: 9px; height: 9px; border-radius: 999px; display: inline-block; border: 1px solid #cfd9e6; }
-        .garment-color { color: var(--muted); font-size: .78rem; border: 1px solid #dbe3ec; border-radius: 999px; padding: .08rem .4rem; }
-        .subline { display: block; font-size: .76rem; margin-top: .2rem; }
-        .subline.danger { color: var(--danger); }
-        .subline.warning { color: var(--warning); }
-        .priority { display: inline-flex; align-items: center; gap: .35rem; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .dot.urgent { background: var(--danger); }
-        .dot.high { background: var(--warning); }
-        .dot.normal, .dot.medium { background: var(--info); }
-        .dot.low { background: var(--gray); }
-        .badge { display: inline-block; border-radius: 999px; padding: .2rem .55rem; font-size: .75rem; font-weight: 600; }
-        .s-pending { color: #92400e; background: #fef3c7; }
-        .s-in-production { color: #1d4ed8; background: #dbeafe; }
-        .s-completed { color: #166534; background: #dcfce7; }
-        .s-delivered { color: #115e59; background: #ccfbf1; }
-        .s-overdue { color: #991b1b; background: #fee2e2; }
-        .s-cancelled { color: #374151; background: #e5e7eb; }
-        .view-btn { border: 1px solid #c8d4e3; background: #fff; border-radius: 6px; padding: .35rem .55rem; cursor: pointer; font-size: .8rem; }
-        .skeleton { height: 14px; border-radius: 6px; background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%); background-size: 400% 100%; animation: shimmer 1.2s infinite; }
-        .empty { text-align: center; padding: 2rem; color: var(--muted); }
-        .load-more-wrap { padding: .8rem; text-align: center; border-top: 1px solid #edf2f7; background: #fbfdff; }
-        .load-more-btn { border: 1px solid #c6d2e3; background: #fff; border-radius: 8px; padding: .45rem .75rem; cursor: pointer; font-size: .82rem; font-weight: 600; }
-        @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
-        @media (max-width: 1050px) { .cards { grid-template-columns: repeat(3, minmax(120px, 1fr)); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Sewing Shop</title>
+<style>
+:root {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --panel-alt: #f8fafc;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #dbe3ec;
+  --brand: #1e2840;
+  --brand-soft: #e8edf7;
+  --brand-light: #5677b5;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --info: #2563eb;
+  --info-bg: #dbeafe;
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --teal: #0d9488;
+  --teal-bg: #ccfbf1;
+  --gray: #6b7280;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+.wrap { max-width: 1380px; margin: 0 auto; padding: 1.25rem 1.25rem 2.5rem; }
+
+/* Header */
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem; }
+.header-left h1 { margin: 0; font-size: 1.4rem; display: flex; align-items: center; gap: .5rem; }
+.live-badge { font-size: .72rem; color: #14532d; background: var(--success-bg); border: 1px solid #86efac; border-radius: 999px; padding: .15rem .5rem; font-weight: 600; }
+.header-left .sub { font-size: .83rem; color: var(--muted); margin-top: .2rem; }
+.header-right { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: .35rem; border-radius: 8px; padding: .5rem .85rem; font-weight: 600; font-size: .85rem; cursor: pointer; border: 1px solid var(--border); background: #fff; font-family: inherit; transition: .15s; text-decoration: none; color: var(--text); }
+.btn:hover { background: #f8fafc; border-color: #c0d0e8; }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.primary:hover { background: #2d3a5a; }
+.btn.success { background: var(--success); border-color: var(--success); color: #fff; }
+.btn.success:hover { background: #14532d; }
+
+/* Nav tabs */
+.nav-tabs { display: flex; gap: .4rem; margin-bottom: 1.1rem; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: .4rem; }
+.nav-tab { padding: .45rem .8rem; border-radius: 7px; font-size: .83rem; font-weight: 600; cursor: pointer; color: var(--muted); border: 1px solid transparent; transition: .15s; text-decoration: none; }
+.nav-tab:hover { background: var(--bg); color: var(--text); }
+.nav-tab.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+/* Stat cards */
+.stat-grid { display: grid; grid-template-columns: repeat(6, minmax(110px, 1fr)); gap: .7rem; margin-bottom: 1.1rem; }
+.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: .8rem; cursor: pointer; transition: .15s; }
+.stat-card:hover { border-color: #9db4d8; transform: translateY(-1px); }
+.stat-card.active { border-color: var(--brand-light); background: var(--brand-soft); box-shadow: 0 0 0 1px var(--brand-light) inset; }
+.stat-card .label { font-size: .75rem; color: var(--muted); margin-bottom: .25rem; }
+.stat-card .value { font-size: 1.5rem; font-weight: 800; }
+.stat-card.overdue .label, .stat-card.overdue .value { color: var(--danger); }
+.stat-card.success-card .value { color: var(--success); }
+
+/* Revenue row */
+.revenue-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; margin-bottom: 1.1rem; }
+.rev-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: .8rem 1rem; }
+.rev-card .label { font-size: .75rem; color: var(--muted); margin-bottom: .2rem; text-transform: uppercase; letter-spacing: .04em; }
+.rev-card .value { font-size: 1.4rem; font-weight: 800; color: #111827; }
+.rev-card .sub { font-size: .76rem; color: var(--muted); margin-top: .2rem; }
+
+/* Alerts */
+.alert-row { margin-bottom: 1rem; }
+.alert { display: flex; align-items: flex-start; gap: .6rem; border-radius: 8px; padding: .65rem .9rem; font-size: .84rem; }
+.alert.warn { background: var(--warning-bg); color: #92400e; border: 1px solid #fcd34d; }
+.alert.warn a { color: #92400e; font-weight: 600; }
+
+/* Toolbar */
+.toolbar { display: flex; gap: .5rem; margin-bottom: .8rem; flex-wrap: wrap; }
+.toolbar-input { flex: 1; min-width: 200px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: .52rem .7rem; font-size: .9rem; }
+.toolbar-select { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: .52rem .7rem; font-size: .9rem; min-width: 180px; }
+.table-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .82rem; margin-bottom: .5rem; }
+
+/* Table */
+.table-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .7rem .75rem; border-bottom: 1px solid #edf2f7; text-align: left; font-size: .88rem; }
+thead th { background: #1f2937; color: #f9fafb; font-size: .79rem; font-weight: 600; white-space: nowrap; }
+tbody tr:hover { background: #f5f8ff; }
+.sortable { cursor: pointer; user-select: none; }
+.arrow { margin-left: .2rem; opacity: .6; }
+
+/* Customer cell */
+.avatar { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: .7rem; font-weight: 700; margin-right: .45rem; flex-shrink: 0; }
+.customer-cell { display: flex; align-items: center; }
+.customer-cell a { color: var(--text); font-weight: 600; text-decoration: none; }
+.customer-cell a:hover { color: var(--brand-light); text-decoration: underline; }
+
+/* Garment cell */
+.garment-cell { display: flex; align-items: center; gap: .4rem; }
+.color-dot { width: 9px; height: 9px; border-radius: 50%; border: 1px solid #c8d4e3; display: inline-block; flex-shrink: 0; }
+.color-tag { font-size: .74rem; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: .06rem .38rem; }
+
+/* Urgency lines */
+.subline { display: block; font-size: .73rem; margin-top: .18rem; }
+.subline.danger { color: var(--danger); font-weight: 600; }
+.subline.warning { color: var(--warning); font-weight: 600; }
+
+/* Priority */
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: .3rem; }
+.dot.urgent { background: var(--danger); }
+.dot.high { background: var(--warning); }
+.dot.normal, .dot.medium { background: var(--info); }
+.dot.low { background: var(--gray); }
+
+/* Badges */
+.badge { display: inline-block; border-radius: 999px; padding: .18rem .52rem; font-size: .73rem; font-weight: 600; white-space: nowrap; }
+.s-pending { color: #92400e; background: #fef3c7; }
+.s-in-production { color: #1d4ed8; background: #dbeafe; }
+.s-completed { color: #166534; background: #dcfce7; }
+.s-delivered { color: #115e59; background: #ccfbf1; }
+.s-overdue { color: #991b1b; background: var(--danger-bg); }
+.s-cancelled { color: #374151; background: #e5e7eb; }
+.pay-unpaid { color: #991b1b; background: var(--danger-bg); }
+.pay-deposit { color: #92400e; background: #fef3c7; }
+.pay-paid { color: #166534; background: var(--success-bg); }
+
+/* Action buttons */
+.view-btn { border: 1px solid #c8d4e3; background: #fff; border-radius: 6px; padding: .3rem .55rem; cursor: pointer; font-size: .78rem; text-decoration: none; color: var(--text); }
+.view-btn:hover { background: var(--brand-soft); }
+
+/* Skeleton */
+.skeleton { height: 13px; border-radius: 6px; background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 37%, #eef2f7 63%); background-size: 400% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+.empty { text-align: center; padding: 2.5rem; color: var(--muted); }
+.load-more-wrap { padding: .8rem; text-align: center; border-top: 1px solid #edf2f7; }
+.load-more-btn { border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: .42rem .75rem; cursor: pointer; font-size: .82rem; font-weight: 600; }
+
+/* Low stock section */
+.low-stock-list { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .35rem; }
+.low-stock-chip { background: var(--warning-bg); border: 1px solid #fcd34d; color: #92400e; border-radius: 999px; padding: .2rem .6rem; font-size: .78rem; font-weight: 600; }
+
+@media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } .revenue-row { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
-    <div class="wrap">
-        <div class="header">
-            <div>
-                <div class="title-row">
-                    <h1>Order Dashboard</h1>
-                    <span class="live-badge">Live</span>
-                </div>
-            </div>
-            <div class="header-right">
-                <span class="timestamp">Last updated: {{ last_updated }}</span>
-                <button class="btn-secondary" onclick="window.location.href='/admin/'">Admin Panel</button>
-                <button class="btn-primary" onclick="window.location.href='/admin/shop/order/add/'">+ New order</button>
-            </div>
-        </div>
+<div class="wrap">
 
-        <div class="cards">
-            <div class="card active" data-filter="all"><div class="card-label">All Orders</div><div class="card-value">{{ all_orders }}</div></div>
-            <div class="card" data-filter="pending"><div class="card-label">Pending</div><div class="card-value">{{ pending_orders }}</div></div>
-            <div class="card" data-filter="in_production"><div class="card-label">In Production</div><div class="card-value">{{ in_production_orders }}</div></div>
-            <div class="card overdue" data-filter="overdue"><div class="card-label">Overdue</div><div class="card-value">{{ overdue_orders }}</div></div>
-            <div class="card" data-filter="completed"><div class="card-label">Completed</div><div class="card-value">{{ completed_orders }}</div></div>
-            <div class="card" data-filter="delivered"><div class="card-label">Delivered</div><div class="card-value">{{ delivered_orders }}</div></div>
-        </div>
-
-        <div class="toolbar">
-            <input id="searchInput" class="input" type="text" placeholder="Search customer or garment...">
-            <select id="sortSelect" class="select">
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="due_asc">Due date ascending</option>
-                <option value="due_desc">Due date descending</option>
-            </select>
-        </div>
-        <div class="table-meta">
-            <span id="rowCount">Showing 0 of 0 orders</span>
-        </div>
-
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="sortable" data-sort="id">ID <span class="arrow">↕</span></th>
-                        <th>Customer</th>
-                        <th>Garment</th>
-                        <th class="sortable" data-sort="order_date">Order date <span class="arrow">↕</span></th>
-                        <th class="sortable" data-sort="due_date">Due date <span class="arrow">↕</span></th>
-                        <th>Assigned to</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-            <div id="emptyState" class="empty" style="display:none;">No orders match the current filters.</div>
-            <div id="loadMoreWrap" class="load-more-wrap" style="display:none;">
-                <button id="loadMoreBtn" class="load-more-btn">Load more</button>
-            </div>
-        </div>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Sewing Shop <span class="live-badge">Live</span></h1>
+      <div class="sub">Last updated: {{ last_updated }}</div>
     </div>
-    {{ table_rows|json_script:"dashboard-data" }}
-    <script>
-        const rows = JSON.parse(document.getElementById("dashboard-data").textContent);
-        const tableBody = document.getElementById("tableBody");
-        const emptyState = document.getElementById("emptyState");
-        const searchInput = document.getElementById("searchInput");
-        const sortSelect = document.getElementById("sortSelect");
-        const rowCount = document.getElementById("rowCount");
-        const loadMoreWrap = document.getElementById("loadMoreWrap");
-        const loadMoreBtn = document.getElementById("loadMoreBtn");
-        const cards = Array.from(document.querySelectorAll(".card"));
-        const sortableHeaders = Array.from(document.querySelectorAll(".sortable"));
+    <div class="header-right">
+      <a href="/production/" class="btn">🧵 Production Board</a>
+      <a href="/admin/" class="btn">⚙ Admin Panel</a>
+      <a href="/orders/new/" class="btn success">+ New Order</a>
+    </div>
+  </div>
 
-        let activeFilter = "all";
-        let searchTerm = "";
-        let activeSort = "order_date";
-        let activeDirection = "desc";
-        let isLoading = true;
-        let visibleRows = 8;
+  <!-- Nav tabs -->
+  <div class="nav-tabs">
+    <span class="nav-tab active" data-filter="all">All Orders</span>
+    <span class="nav-tab" data-filter="pending">Pending</span>
+    <span class="nav-tab" data-filter="in_production">In Production</span>
+    <span class="nav-tab overdue-tab" data-filter="overdue">⚠ Overdue{% if overdue_orders %} ({{ overdue_orders }}){% endif %}</span>
+    <span class="nav-tab" data-filter="completed">Completed</span>
+    <span class="nav-tab" data-filter="delivered">Delivered</span>
+  </div>
 
-        function nameToColor(name) {
-            let hash = 0;
-            for (let i = 0; i < name.length; i += 1) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-            const hue = Math.abs(hash % 360);
-            return `hsl(${hue}, 62%, 45%)`;
-        }
+  <!-- Status summary cards -->
+  <div class="stat-grid">
+    <div class="stat-card active" data-filter="all">
+      <div class="label">All Orders</div>
+      <div class="value">{{ all_orders }}</div>
+    </div>
+    <div class="stat-card" data-filter="pending">
+      <div class="label">Pending</div>
+      <div class="value">{{ pending_orders }}</div>
+    </div>
+    <div class="stat-card" data-filter="in_production">
+      <div class="label">In Production</div>
+      <div class="value">{{ in_production_orders }}</div>
+    </div>
+    <div class="stat-card overdue" data-filter="overdue">
+      <div class="label">Overdue</div>
+      <div class="value">{{ overdue_orders }}</div>
+    </div>
+    <div class="stat-card success-card" data-filter="completed">
+      <div class="label">Completed</div>
+      <div class="value">{{ completed_orders }}</div>
+    </div>
+    <div class="stat-card" data-filter="delivered">
+      <div class="label">Delivered</div>
+      <div class="value">{{ delivered_orders }}</div>
+    </div>
+  </div>
 
-        function normalizeStatus(status) {
-            return String(status || "").toLowerCase().replaceAll(" ", "_");
-        }
+  <!-- Revenue row -->
+  <div class="revenue-row">
+    <div class="rev-card">
+      <div class="label">Total Revenue</div>
+      <div class="value">${{ total_revenue|floatformat:2 }}</div>
+      <div class="sub">Across all orders</div>
+    </div>
+    <div class="rev-card">
+      <div class="label">Deposits Collected</div>
+      <div class="value">${{ total_deposit|floatformat:2 }}</div>
+      <div class="sub">Paid at intake</div>
+    </div>
+    <div class="rev-card">
+      <div class="label">Balance Outstanding</div>
+      <div class="value" style="color:var(--warning)">${{ balance_outstanding|floatformat:2 }}</div>
+      <div class="sub">Still to collect</div>
+    </div>
+  </div>
 
-        function normalizePriority(priority) {
-            const p = String(priority || "").toLowerCase();
-            if (p.includes("urgent")) return "urgent";
-            if (p.includes("high")) return "high";
-            if (p.includes("medium") || p.includes("normal")) return "medium";
-            if (p.includes("low")) return "low";
-            return "medium";
-        }
+  <!-- Low stock alert -->
+  {% if low_stock_materials %}
+  <div class="alert-row">
+    <div class="alert warn">
+      <span>⚠</span>
+      <div>
+        <strong>Low stock alert:</strong>
+        <span>{{ low_stock_materials.count }} material{{ low_stock_materials.count|pluralize }} below threshold.</span>
+        <div class="low-stock-list">
+          {% for m in low_stock_materials %}
+          <span class="low-stock-chip">{{ m.name }}{% if m.color %} ({{ m.color }}){% endif %} — {{ m.stock_quantity }} left</span>
+          {% endfor %}
+        </div>
+        <a href="/admin/shop/material/" style="margin-top:.3rem;display:inline-block;">→ Manage materials</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
-        function displayStatus(row, overdueDays) {
-            const normalized = normalizeStatus(row.status);
-            if (overdueDays !== null && !["completed", "delivered"].includes(normalized)) {
-                return { label: "Overdue", className: "s-overdue" };
-            }
-            if (normalized === "pending") return { label: "Pending", className: "s-pending" };
-            if (normalized === "in_production") return { label: "In Production", className: "s-in-production" };
-            if (normalized === "completed") return { label: "Completed", className: "s-completed" };
-            if (normalized === "delivered") return { label: "Delivered", className: "s-delivered" };
-            if (normalized === "cancelled") return { label: "Cancelled", className: "s-cancelled" };
-            return { label: normalized.replaceAll("_", " "), className: "s-cancelled" };
-        }
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input id="searchInput" class="toolbar-input" type="text" placeholder="Search customer, garment, color…">
+    <select id="sortSelect" class="toolbar-select">
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="due_asc">Due date ↑</option>
+      <option value="due_desc">Due date ↓</option>
+    </select>
+  </div>
+  <div class="table-meta">
+    <span id="rowCount">Loading…</span>
+  </div>
 
-        function normalizeDate(value) {
-            return value ? new Date(value).getTime() : 0;
-        }
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="sortable" data-sort="id">Order <span class="arrow">↕</span></th>
+          <th>Customer</th>
+          <th>Garment</th>
+          <th class="sortable" data-sort="order_date">Order date <span class="arrow">↕</span></th>
+          <th class="sortable" data-sort="due_date">Due date <span class="arrow">↕</span></th>
+          <th>Assigned to</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Payment</th>
+          <th>Total</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div id="emptyState" class="empty" style="display:none">No orders match the current filters.</div>
+    <div id="loadMoreWrap" class="load-more-wrap" style="display:none">
+      <button id="loadMoreBtn" class="load-more-btn">Load more</button>
+    </div>
+  </div>
 
-        function computeUrgency(row) {
-            if (!row.due_date) return { overdueDays: null, dueInDays: null };
-            const due = new Date(`${row.due_date}T00:00:00`);
-            const today = new Date();
-            const localToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            const dayDiff = Math.floor((due - localToday) / 86400000);
-            const normalizedStatus = normalizeStatus(row.status);
-            const active = !["completed", "delivered", "cancelled"].includes(normalizedStatus);
-            if (active && dayDiff < 0) return { overdueDays: Math.abs(dayDiff), dueInDays: null };
-            if (active && dayDiff <= 3) return { overdueDays: null, dueInDays: dayDiff };
-            return { overdueDays: null, dueInDays: null };
-        }
+</div>
 
-        function applyFilters() {
-            const filtered = rows.filter((row) => {
-                const urgency = computeUrgency(row);
-                const normalizedStatus = normalizeStatus(row.status);
-                const statusMatch =
-                    activeFilter === "all"
-                        ? true
-                        : activeFilter === "overdue"
-                            ? urgency.overdueDays !== null
-                            : normalizedStatus === activeFilter;
-                const q = `${row.customer_name} ${row.garment} ${row.color || ""}`.toLowerCase();
-                return statusMatch && q.includes(searchTerm);
-            });
+{{ table_rows|json_script:"dashboard-data" }}
 
-            filtered.sort((a, b) => {
-                let av = a[activeSort];
-                let bv = b[activeSort];
-                if (activeSort === "order_date" || activeSort === "due_date") {
-                    av = normalizeDate(av);
-                    bv = normalizeDate(bv);
-                }
-                if (activeSort === "id") {
-                    av = Number(av);
-                    bv = Number(bv);
-                }
-                if (av < bv) return activeDirection === "asc" ? -1 : 1;
-                if (av > bv) return activeDirection === "asc" ? 1 : -1;
-                return 0;
-            });
-            return filtered;
-        }
+<script>
+const rows = JSON.parse(document.getElementById("dashboard-data").textContent);
+const tableBody = document.getElementById("tableBody");
+const emptyState = document.getElementById("emptyState");
+const searchInput = document.getElementById("searchInput");
+const sortSelect = document.getElementById("sortSelect");
+const rowCount = document.getElementById("rowCount");
+const loadMoreWrap = document.getElementById("loadMoreWrap");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
 
-        function renderSkeleton() {
-            const rowsHtml = Array.from({ length: 5 }).map(
-                () => `<tr>
-                    <td><div class="skeleton"></div></td><td><div class="skeleton"></div></td><td><div class="skeleton"></div></td>
-                    <td><div class="skeleton"></div></td><td><div class="skeleton"></div></td><td><div class="skeleton"></div></td>
-                    <td><div class="skeleton"></div></td><td><div class="skeleton"></div></td><td><div class="skeleton"></div></td>
-                </tr>`
-            ).join("");
-            tableBody.innerHTML = rowsHtml;
-            emptyState.style.display = "none";
-        }
+const statCards = Array.from(document.querySelectorAll(".stat-card"));
+const navTabs = Array.from(document.querySelectorAll(".nav-tab"));
+const sortableHeaders = Array.from(document.querySelectorAll(".sortable"));
 
-        function renderTable() {
-            if (isLoading) return renderSkeleton();
-            const filtered = applyFilters();
-            const shown = filtered.slice(0, visibleRows);
-            rowCount.textContent = `Showing ${shown.length} of ${filtered.length} orders`;
-            if (!filtered.length) {
-                tableBody.innerHTML = "";
-                emptyState.style.display = "block";
-                loadMoreWrap.style.display = "none";
-                return;
-            }
-            emptyState.style.display = "none";
-            loadMoreWrap.style.display = filtered.length > shown.length ? "block" : "none";
-            tableBody.innerHTML = shown.map((row) => {
-                const urgency = computeUrgency(row);
-                const status = displayStatus(row, urgency.overdueDays);
-                const dueDateText = row.due_date || "-";
-                const dueLine = urgency.overdueDays !== null
-                    ? `<span class="subline danger">${urgency.overdueDays}d overdue</span>`
-                    : urgency.dueInDays !== null
-                        ? `<span class="subline warning">Due in ${urgency.dueInDays}d</span>`
-                        : "";
-                const priorityClass = normalizePriority(row.priority);
-                const garmentColor = row.color || "N/A";
-                return `<tr>
-                    <td class="muted">#${row.id}</td>
-                    <td><div class="customer-cell"><span class="avatar" style="background:${nameToColor(row.customer_name)}">${row.customer_initials}</span>${row.customer_name}</div></td>
-                    <td><div class="garment-cell"><span class="garment-dot" title="${garmentColor}" style="background:${nameToColor(garmentColor)}"></span>${row.garment}<span class="garment-color">${garmentColor}</span></div></td>
-                    <td>${row.order_date || "-"}</td>
-                    <td>${dueDateText}${dueLine}</td>
-                    <td>${row.assigned_to}</td>
-                    <td><span class="priority"><span class="dot ${priorityClass}"></span>${priorityClass}</span></td>
-                    <td><span class="badge ${status.className}">${status.label}</span></td>
-                    <td><button class="view-btn" onclick="window.location.href='/admin/shop/order/${row.id}/change/'">View</button></td>
-                </tr>`;
-            }).join("");
-        }
+let activeFilter = "all";
+let searchTerm = "";
+let activeSort = "order_date";
+let activeDirection = "desc";
+let isLoading = true;
+let visibleRows = 12;
 
-        function setHeaderIndicators() {
-            sortableHeaders.forEach((th) => {
-                const arrow = th.querySelector(".arrow");
-                const key = th.dataset.sort;
-                if (key === activeSort) arrow.textContent = activeDirection === "asc" ? "↑" : "↓";
-                else arrow.textContent = "↕";
-            });
-        }
+function nameToColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return `hsl(${Math.abs(h % 360)}, 58%, 44%)`;
+}
 
-        cards.forEach((card) => {
-            card.addEventListener("click", () => {
-                activeFilter = card.dataset.filter;
-                visibleRows = 8;
-                cards.forEach((c) => c.classList.remove("active"));
-                card.classList.add("active");
-                renderTable();
-            });
-        });
+function normalizeStatus(s) { return String(s || "").toLowerCase().replaceAll(" ", "_"); }
+function normalizePriority(p) {
+  const v = String(p || "").toLowerCase();
+  if (v.includes("urgent")) return "urgent";
+  if (v.includes("high")) return "high";
+  if (v.includes("medium") || v.includes("normal")) return "normal";
+  return "low";
+}
 
-        searchInput.addEventListener("input", (e) => {
-            searchTerm = e.target.value.trim().toLowerCase();
-            visibleRows = 8;
-            renderTable();
-        });
+function computeUrgency(row) {
+  if (!row.due_date) return { overdueDays: null, dueInDays: null };
+  const due = new Date(`${row.due_date}T00:00:00`);
+  const today = new Date(); const lt = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const diff = Math.floor((due - lt) / 86400000);
+  const active = !["completed", "delivered", "cancelled"].includes(normalizeStatus(row.status));
+  if (active && diff < 0) return { overdueDays: Math.abs(diff), dueInDays: null };
+  if (active && diff <= 3) return { overdueDays: null, dueInDays: diff };
+  return { overdueDays: null, dueInDays: null };
+}
 
-        sortSelect.addEventListener("change", (e) => {
-            const selected = e.target.value;
-            if (selected === "newest") {
-                activeSort = "order_date";
-                activeDirection = "desc";
-            } else if (selected === "oldest") {
-                activeSort = "order_date";
-                activeDirection = "asc";
-            } else if (selected === "due_asc") {
-                activeSort = "due_date";
-                activeDirection = "asc";
-            } else {
-                activeSort = "due_date";
-                activeDirection = "desc";
-            }
-            visibleRows = 8;
-            setHeaderIndicators();
-            renderTable();
-        });
+function displayStatus(row, overdueDays) {
+  const ns = normalizeStatus(row.status);
+  if (overdueDays !== null && !["completed", "delivered"].includes(ns)) return { label: "Overdue", cls: "s-overdue" };
+  const map = { pending: ["Pending", "s-pending"], in_production: ["In Production", "s-in-production"], completed: ["Completed", "s-completed"], delivered: ["Delivered", "s-delivered"], cancelled: ["Cancelled", "s-cancelled"] };
+  const [label, cls] = map[ns] || [ns, "s-cancelled"];
+  return { label, cls };
+}
 
-        sortableHeaders.forEach((th) => {
-            th.addEventListener("click", () => {
-                const key = th.dataset.sort;
-                if (activeSort === key) activeDirection = activeDirection === "asc" ? "desc" : "asc";
-                else {
-                    activeSort = key;
-                    activeDirection = "asc";
-                }
-                visibleRows = 8;
-                setHeaderIndicators();
-                renderTable();
-            });
-        });
+function paymentBadge(status) {
+  const map = { unpaid: ["Unpaid", "pay-unpaid"], deposit: ["Deposit", "pay-deposit"], paid: ["Paid", "pay-paid"] };
+  const [label, cls] = map[status] || ["—", "s-cancelled"];
+  return { label, cls };
+}
 
-        loadMoreBtn.addEventListener("click", () => {
-            visibleRows += 8;
-            renderTable();
-        });
+function normalizeDate(v) { return v ? new Date(v).getTime() : 0; }
 
-        renderSkeleton();
-        setHeaderIndicators();
-        setTimeout(() => {
-            isLoading = false;
-            renderTable();
-        }, 450);
-    </script>
+function applyFilters() {
+  return rows.filter(row => {
+    const urgency = computeUrgency(row);
+    const ns = normalizeStatus(row.status);
+    const statusMatch = activeFilter === "all" ? true
+      : activeFilter === "overdue" ? urgency.overdueDays !== null
+      : ns === activeFilter;
+    const q = `${row.customer_name} ${row.garment} ${row.color || ""}`.toLowerCase();
+    return statusMatch && q.includes(searchTerm);
+  }).sort((a, b) => {
+    let av = a[activeSort], bv = b[activeSort];
+    if (activeSort === "order_date" || activeSort === "due_date") { av = normalizeDate(av); bv = normalizeDate(bv); }
+    if (activeSort === "id") { av = Number(av); bv = Number(bv); }
+    return (av < bv ? -1 : av > bv ? 1 : 0) * (activeDirection === "asc" ? 1 : -1);
+  });
+}
+
+function renderSkeleton() {
+  tableBody.innerHTML = Array.from({ length: 6 }).map(() => `<tr>${Array.from({ length: 11 }).map(() => `<td><div class="skeleton"></div></td>`).join("")}</tr>`).join("");
+  emptyState.style.display = "none";
+}
+
+function renderTable() {
+  if (isLoading) return renderSkeleton();
+  const filtered = applyFilters();
+  const shown = filtered.slice(0, visibleRows);
+  rowCount.textContent = `Showing ${shown.length} of ${filtered.length} orders`;
+  if (!filtered.length) { tableBody.innerHTML = ""; emptyState.style.display = "block"; loadMoreWrap.style.display = "none"; return; }
+  emptyState.style.display = "none";
+  loadMoreWrap.style.display = filtered.length > shown.length ? "block" : "none";
+
+  tableBody.innerHTML = shown.map(row => {
+    const urgency = computeUrgency(row);
+    const st = displayStatus(row, urgency.overdueDays);
+    const py = paymentBadge(row.payment_status);
+    const dueDateText = row.due_date || "—";
+    const dueLine = urgency.overdueDays !== null
+      ? `<span class="subline danger">${urgency.overdueDays}d overdue</span>`
+      : urgency.dueInDays !== null
+        ? `<span class="subline warning">Due in ${urgency.dueInDays}d</span>`
+        : "";
+    const pClass = normalizePriority(row.priority);
+    const color = row.color || "—";
+    const total = row.total_price ? `$${parseFloat(row.total_price).toFixed(2)}` : "—";
+    const initials = (row.customer_initials || "?");
+
+    return `<tr>
+      <td style="font-size:.8rem;color:var(--muted)">#${row.id}</td>
+      <td>
+        <div class="customer-cell">
+          <span class="avatar" style="background:${nameToColor(row.customer_name)}">${initials}</span>
+          <a href="/customers/${row.customer_id}/" title="Customer history">${row.customer_name}</a>
+        </div>
+      </td>
+      <td>
+        <div class="garment-cell">
+          <span class="color-dot" style="background:${nameToColor(color)}" title="${color}"></span>
+          ${row.garment}
+          ${color !== "—" ? `<span class="color-tag">${color}</span>` : ""}
+        </div>
+      </td>
+      <td>${row.order_date || "—"}</td>
+      <td>${dueDateText}${dueLine}</td>
+      <td style="color:${row.assigned_to === 'Unassigned' ? 'var(--muted)' : 'inherit'}">${row.assigned_to}</td>
+      <td><span class="dot ${pClass}"></span>${pClass}</td>
+      <td><span class="badge ${st.cls}">${st.label}</span></td>
+      <td><span class="badge ${py.cls}">${py.label}</span></td>
+      <td style="font-weight:600">${total}</td>
+      <td style="white-space:nowrap">
+        <a class="view-btn" href="/admin/shop/order/${row.id}/change/" title="Edit order">Edit</a>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function setHeaderIndicators() {
+  sortableHeaders.forEach(th => {
+    const arrow = th.querySelector(".arrow");
+    arrow.textContent = th.dataset.sort === activeSort ? (activeDirection === "asc" ? "↑" : "↓") : "↕";
+  });
+}
+
+function setActiveFilter(filter) {
+  activeFilter = filter;
+  visibleRows = 12;
+  statCards.forEach(c => c.classList.toggle("active", c.dataset.filter === filter));
+  navTabs.forEach(t => t.classList.toggle("active", t.dataset.filter === filter));
+  renderTable();
+}
+
+statCards.forEach(c => c.addEventListener("click", () => setActiveFilter(c.dataset.filter)));
+navTabs.forEach(t => t.addEventListener("click", () => setActiveFilter(t.dataset.filter)));
+
+searchInput.addEventListener("input", e => {
+  searchTerm = e.target.value.trim().toLowerCase();
+  visibleRows = 12;
+  renderTable();
+});
+
+sortSelect.addEventListener("change", e => {
+  const v = e.target.value;
+  if (v === "newest") { activeSort = "order_date"; activeDirection = "desc"; }
+  else if (v === "oldest") { activeSort = "order_date"; activeDirection = "asc"; }
+  else if (v === "due_asc") { activeSort = "due_date"; activeDirection = "asc"; }
+  else { activeSort = "due_date"; activeDirection = "desc"; }
+  visibleRows = 12; setHeaderIndicators(); renderTable();
+});
+
+sortableHeaders.forEach(th => th.addEventListener("click", () => {
+  const k = th.dataset.sort;
+  if (activeSort === k) activeDirection = activeDirection === "asc" ? "desc" : "asc";
+  else { activeSort = k; activeDirection = "asc"; }
+  visibleRows = 12; setHeaderIndicators(); renderTable();
+}));
+
+loadMoreBtn.addEventListener("click", () => { visibleRows += 12; renderTable(); });
+
+renderSkeleton();
+setHeaderIndicators();
+setTimeout(() => { isLoading = false; renderTable(); }, 350);
+</script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 from pathlib import Path
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
 import os
 
 load_dotenv()
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'corsheaders',
     'shop.apps.ShopConfig',
 ]
 
@@ -39,7 +41,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',   # must be after SessionMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -108,10 +112,19 @@ AUTH_PASSWORD_VALIDATORS = [
 #  LOCALISATION
 # ============================================================
 
+APPEND_SLASH = False  # Next.js proxy strips trailing slashes; API URLs must match as-is
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Europe/Madrid'
 USE_I18N = True
 USE_TZ = True
+
+LANGUAGES = [
+    ('en', 'English'),
+    ('es', 'Español'),
+]
+
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 
 # ============================================================
@@ -126,6 +139,15 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ============================================================
+#  CORS — Allow Next.js dev server
+# ============================================================
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 
 # ============================================================
@@ -144,27 +166,42 @@ UNFOLD = {
         "show_all_applications": True,
         "navigation": [
             {
-                "title": "Customers & Orders",
+                "title": _("Customers & Orders"),
                 "items": [
-                    {"title": "Customers",   "icon": "person",       "link": "/admin/shop/customer/"},
-                    {"title": "Orders",      "icon": "receipt_long", "link": "/admin/shop/order/"},
-                    {"title": "Order Items", "icon": "checkroom",    "link": "/admin/shop/orderitem/"},
+                    {"title": _("Customers"),   "icon": "person",       "link": "/admin/shop/customer/"},
+                    {"title": _("Orders"),      "icon": "receipt_long", "link": "/admin/shop/order/"},
+                    {"title": _("Order Items"), "icon": "checkroom",    "link": "/admin/shop/orderitem/"},
                 ],
             },
             {
-                "title": "Production",
+                "title": _("Production"),
                 "items": [
-                    {"title": "Work Tickets",       "icon": "assignment",      "link": "/admin/shop/workticket/"},
-                    {"title": "Production Stages",  "icon": "timeline",        "link": "/admin/shop/productionstage/"},
-                    {"title": "Measurements",       "icon": "straighten",      "link": "/admin/shop/measurement/"},
+                    {"title": _("Work Tickets"),       "icon": "assignment",      "link": "/admin/shop/workticket/"},
+                    {"title": _("Production Stages"),  "icon": "timeline",        "link": "/admin/shop/productionstage/"},
+                    {"title": _("Measurements"),       "icon": "straighten",      "link": "/admin/shop/measurement/"},
                 ],
             },
             {
-                "title": "Resources",
+                "title": _("Resources"),
                 "items": [
-                    {"title": "Employees",  "icon": "badge",         "link": "/admin/shop/employee/"},
-                    {"title": "Materials",  "icon": "inventory_2",   "link": "/admin/shop/material/"},
-                    {"title": "Deliveries", "icon": "local_shipping","link": "/admin/shop/delivery/"},
+                    {"title": _("Employees"),  "icon": "badge",         "link": "/admin/shop/employee/"},
+                    {"title": _("Materials"),  "icon": "inventory_2",   "link": "/admin/shop/material/"},
+                    {"title": _("Deliveries"), "icon": "local_shipping","link": "/admin/shop/delivery/"},
+                ],
+            },
+            {
+                "title": "Language / Idioma",
+                "items": [
+                    {
+                        "title": "🇬🇧 English",
+                        "icon": "language",
+                        "link": "/i18n/en/?next=/admin/",
+                    },
+                    {
+                        "title": "🇪🇸 Español",
+                        "icon": "language",
+                        "link": "/i18n/es/?next=/admin/",
+                    },
                 ],
             },
         ],

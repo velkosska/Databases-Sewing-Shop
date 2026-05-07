@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Order — Sewing Shop</title>
+<style>
+:root {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --border: #dbe3ec;
+  --brand: #1e2840;
+  --brand-light: #5677b5;
+  --muted: #6b7280;
+  --ok: #166534;
+  --ok-bg: #dcfce7;
+  --ok-border: #86efac;
+  --warn: #b45309;
+  --warn-bg: #fef3c7;
+  --warn-border: #fcd34d;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --info-bg: #dbeafe;
+  --info: #1d4ed8;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(15,23,42,.08);
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; background: var(--bg); color: #111827; font-size: 14px; }
+a { color: var(--brand-light); }
+
+.layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+.sidebar { background: var(--brand); color: #e5e7eb; padding: 1.5rem 1rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sidebar h2 { margin: 0 0 .3rem; font-size: 1.1rem; color: #fff; }
+.sidebar .sub { font-size: .78rem; color: #94a3b8; margin-bottom: 1.5rem; }
+.step-nav { display: flex; flex-direction: column; gap: .3rem; }
+.step-nav-item { display: flex; align-items: center; gap: .6rem; padding: .55rem .75rem; border-radius: 8px; cursor: pointer; transition: .15s; font-size: .88rem; color: #94a3b8; border: 1px solid transparent; }
+.step-nav-item.active { background: rgba(86,119,181,.25); color: #fff; border-color: rgba(86,119,181,.4); }
+.step-nav-item.done { color: #6ee7b7; }
+.step-nav-item.done .step-num { background: #065f46; color: #6ee7b7; }
+.step-num { width: 24px; height: 24px; border-radius: 50%; background: #374151; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; flex-shrink: 0; }
+.step-nav-item.active .step-num { background: var(--brand-light); color: #fff; }
+
+.sidebar-summary { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #374151; }
+.sidebar-summary h4 { margin: 0 0 .5rem; font-size: .8rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .05em; }
+.summary-row { display: flex; justify-content: space-between; font-size: .82rem; margin-bottom: .3rem; }
+.summary-row .label { color: #9ca3af; }
+.summary-row .value { color: #f3f4f6; font-weight: 600; }
+.summary-total { margin-top: .75rem; padding-top: .6rem; border-top: 1px solid #374151; display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; color: #fff; }
+
+.main { padding: 1.5rem; max-width: 800px; }
+.step-header { margin-bottom: 1.25rem; }
+.step-header h1 { margin: 0 0 .2rem; font-size: 1.25rem; }
+.step-header p { margin: 0; color: var(--muted); font-size: .88rem; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+.card-header { font-weight: 700; font-size: .9rem; margin-bottom: .9rem; color: #374151; display: flex; align-items: center; gap: .5rem; }
+.card-header .icon { font-size: 1rem; }
+
+.field-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+.field-group.cols3 { grid-template-columns: repeat(3, 1fr); }
+.field-group.cols1 { grid-template-columns: 1fr; }
+.field-span2 { grid-column: span 2; }
+.field-span3 { grid-column: span 3; }
+
+label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .3rem; font-weight: 500; }
+label .req { color: var(--danger); margin-left: 2px; }
+input, select, textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: 7px;
+  padding: .55rem .7rem; font-size: .9rem; background: #fff; color: #111827;
+  transition: border-color .15s, box-shadow .15s;
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--brand-light);
+  box-shadow: 0 0 0 3px rgba(86,119,181,.12);
+}
+textarea { min-height: 72px; resize: vertical; }
+input[readonly] { background: #f8fafc; color: var(--muted); }
+
+.hint { font-size: .76rem; color: var(--muted); margin-top: .25rem; }
+
+.customer-select-wrap { position: relative; }
+.customer-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; z-index: 100; max-height: 280px; overflow-y: auto; box-shadow: 0 4px 12px rgba(15,23,42,.1); }
+.customer-option { padding: .6rem .8rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+.customer-option:hover { background: #f8fbff; }
+.customer-option .name { font-weight: 600; font-size: .9rem; }
+.customer-option .meta { font-size: .78rem; color: var(--muted); }
+.customer-option .badge { background: var(--info-bg); color: var(--info); border-radius: 999px; padding: .1rem .45rem; font-size: .74rem; }
+
+.selected-customer { background: #f0fdf4; border: 1px solid var(--ok-border); border-radius: 8px; padding: .7rem .9rem; display: flex; justify-content: space-between; align-items: flex-start; }
+.selected-customer .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: .88rem; flex-shrink: 0; margin-right: .75rem; }
+.selected-customer .info { flex: 1; }
+.selected-customer .info .name { font-weight: 700; font-size: .95rem; }
+.selected-customer .info .meta { font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+.selected-customer .change-btn { font-size: .78rem; color: var(--brand-light); cursor: pointer; padding: .2rem .4rem; }
+
+.new-customer-toggle { margin-top: .75rem; font-size: .85rem; }
+.new-customer-toggle button { background: none; border: none; color: var(--brand-light); cursor: pointer; font-size: .85rem; padding: 0; text-decoration: underline; }
+.new-customer-form { margin-top: .75rem; padding: .9rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; }
+
+/* Items */
+.item-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: .75rem; box-shadow: var(--shadow); }
+.item-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+.item-card-header .item-label { font-weight: 700; font-size: .9rem; color: #374151; }
+.item-card-header .remove-btn { background: none; border: 1px solid #fca5a5; color: var(--danger); border-radius: 6px; padding: .25rem .5rem; font-size: .78rem; cursor: pointer; }
+.item-card-header .remove-btn:hover { background: var(--danger-bg); }
+
+.price-chip { display: inline-flex; align-items: center; gap: .3rem; border-radius: 999px; padding: .18rem .55rem; font-size: .75rem; font-weight: 600; }
+.price-chip.ok { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-border); }
+.price-chip.modified { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-border); }
+
+.add-item-btn { width: 100%; border: 2px dashed var(--border); background: transparent; border-radius: var(--radius); padding: .75rem; font-size: .88rem; color: var(--muted); cursor: pointer; font-weight: 600; transition: .15s; }
+.add-item-btn:hover { border-color: var(--brand-light); color: var(--brand-light); background: #f0f5ff; }
+
+.totals-bar { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.totals-bar .t-item { text-align: center; }
+.totals-bar .t-label { font-size: .75rem; color: var(--muted); margin-bottom: .15rem; }
+.totals-bar .t-value { font-size: 1.1rem; font-weight: 700; color: #111827; }
+.totals-bar .t-value.balance { color: var(--warn); }
+
+/* Measurements */
+.measurement-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; }
+.meas-prefilled input { background: #f0fdf4; border-color: var(--ok-border); }
+.meas-source { font-size: .78rem; color: var(--ok); margin-top: .4rem; background: var(--ok-bg); border: 1px solid var(--ok-border); border-radius: 6px; padding: .3rem .6rem; display: inline-block; }
+.no-measure-note { text-align: center; padding: 1.5rem; color: var(--muted); font-size: .9rem; background: #f8fafc; border: 1px dashed var(--border); border-radius: 8px; }
+
+/* Actions */
+.actions-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.btn { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: .55rem .9rem; font-weight: 600; font-size: .88rem; cursor: pointer; transition: .15s; font-family: inherit; }
+.btn:hover { background: #f8fafc; }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.primary:hover { background: #2d3a5a; }
+.btn.success { background: #166534; border-color: #166534; color: #fff; }
+.btn.success:hover { background: #14532d; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.hidden { display: none !important; }
+
+/* Alerts */
+.alert { border-radius: 8px; padding: .65rem .9rem; font-size: .85rem; margin-bottom: .75rem; }
+.alert.error { background: var(--danger-bg); color: #991b1b; border: 1px solid #fca5a5; }
+.alert.info { background: var(--info-bg); color: var(--info); border: 1px solid #93c5fd; }
+
+/* Delivery */
+.delivery-option { border: 2px solid var(--border); border-radius: 8px; padding: .75rem 1rem; cursor: pointer; transition: .15s; margin-bottom: .5rem; display: flex; align-items: center; gap: .7rem; }
+.delivery-option:hover { border-color: var(--brand-light); }
+.delivery-option.selected { border-color: var(--brand-light); background: #f0f5ff; }
+.delivery-option .icon { font-size: 1.3rem; }
+.delivery-option .label { font-weight: 600; font-size: .9rem; }
+.delivery-option .desc { font-size: .78rem; color: var(--muted); }
+
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; padding: 1rem; }
+  .step-nav { flex-direction: row; flex-wrap: wrap; }
+  .measurement-grid { grid-template-columns: repeat(2, 1fr); }
+  .field-group { grid-template-columns: 1fr; }
+  .field-span2 { grid-column: span 1; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>New Order</h2>
+    <p class="sub">Step-by-step intake</p>
+    <nav class="step-nav">
+      <div class="step-nav-item active" data-goto="1">
+        <span class="step-num">1</span>
+        <div><strong>Customer</strong><br><small>Select or create</small></div>
+      </div>
+      <div class="step-nav-item" data-goto="2">
+        <span class="step-num">2</span>
+        <div><strong>Items & Pricing</strong><br><small>Services and quantities</small></div>
+      </div>
+      <div class="step-nav-item" data-goto="3">
+        <span class="step-num">3</span>
+        <div><strong>Measurements</strong><br><small>Body dimensions</small></div>
+      </div>
+      <div class="step-nav-item" data-goto="4">
+        <span class="step-num">4</span>
+        <div><strong>Delivery & Payment</strong><br><small>Pickup or delivery</small></div>
+      </div>
+    </nav>
+
+    <div class="sidebar-summary">
+      <h4>Order Summary</h4>
+      <div class="summary-row"><span class="label">Customer</span><span class="value" id="summaryCustomer">—</span></div>
+      <div class="summary-row"><span class="label">Items</span><span class="value" id="summaryItems">0</span></div>
+      <div class="summary-row"><span class="label">Subtotal</span><span class="value" id="summarySubtotal">$0.00</span></div>
+      <div class="summary-row"><span class="label">Deposit</span><span class="value" id="summaryDeposit">$0.00</span></div>
+      <div class="summary-total"><span>Balance Due</span><span id="summaryBalance">$0.00</span></div>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <a href="/" style="color: #94a3b8; font-size: .82rem;">← Back to dashboard</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <form method="post" id="wizardForm">
+      {% csrf_token %}
+      {{ catalogue_items|json_script:"catalogue-items-data" }}
+      {{ employees|json_script:"employees-data" }}
+      {{ customers|json_script:"customers-data" }}
+      {{ materials|json_script:"materials-data" }}
+
+      <input type="hidden" name="customer_id" id="customerId">
+      <input type="hidden" name="create_new_customer" id="createNewCustomer" value="0">
+      <input type="hidden" name="items_json" id="itemsJson">
+      <input type="hidden" name="measurements_json" id="measurementsJson">
+
+      <!-- ── STEP 1: Customer ─────────────────────────── -->
+      <section data-step="1">
+        <div class="step-header">
+          <h1>Select Customer</h1>
+          <p>Search for an existing customer or register a new one.</p>
+        </div>
+
+        <!-- Search & dropdown -->
+        <div class="card" id="customerSearchCard">
+          <div class="card-header"><span class="icon">🔍</span> Find Existing Customer</div>
+          <div class="customer-select-wrap">
+            <input
+              type="text" id="customerSearch"
+              placeholder="Type name, phone, or email…"
+              autocomplete="off"
+            >
+            <div id="customerDropdown" class="customer-dropdown hidden"></div>
+          </div>
+          <p class="hint">Start typing to search, then click a result.</p>
+        </div>
+
+        <!-- Selected customer display -->
+        <div id="selectedCustomerCard" class="hidden">
+          <div class="selected-customer card" style="padding:.8rem 1rem;">
+            <div id="customerAvatar" class="avatar" style="margin-right:.75rem"></div>
+            <div class="info">
+              <div class="name" id="selectedName"></div>
+              <div class="meta" id="selectedMeta"></div>
+            </div>
+            <button type="button" class="change-btn" id="changeCustomerBtn">Change</button>
+          </div>
+        </div>
+
+        <!-- New customer toggle -->
+        <div class="new-customer-toggle" id="newCustomerToggle">
+          <span style="color:var(--muted)">Customer not in system? </span>
+          <button type="button" id="toggleNewCustomer">+ Register new customer</button>
+        </div>
+
+        <!-- New customer form -->
+        <div class="card new-customer-form hidden" id="newCustomerForm">
+          <div class="card-header"><span class="icon">👤</span> New Customer Details</div>
+          <div class="field-group">
+            <div>
+              <label>First name <span class="req">*</span></label>
+              <input type="text" name="new_first_name" id="newFirstName" placeholder="Ana">
+            </div>
+            <div>
+              <label>Last name <span class="req">*</span></label>
+              <input type="text" name="new_last_name" id="newLastName" placeholder="García">
+            </div>
+            <div>
+              <label>Phone</label>
+              <input type="tel" name="new_phone" placeholder="+34 600 000 000">
+            </div>
+            <div>
+              <label>Email</label>
+              <input type="email" name="new_email" placeholder="ana@example.com">
+            </div>
+            <div class="field-span2">
+              <label>Address</label>
+              <input type="text" name="new_address" placeholder="Calle Mayor 1, Madrid">
+            </div>
+            <div class="field-span2">
+              <label>Notes / preferences</label>
+              <textarea name="new_customer_notes" placeholder="E.g. prefers loose fit, allergic to synthetic fabrics…"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── STEP 2: Items ─────────────────────────────── -->
+      <section data-step="2" class="hidden">
+        <div class="step-header">
+          <h1>Order Items</h1>
+          <p>Add each garment or service. Prices auto-fill from the catalogue.</p>
+        </div>
+
+        <div id="itemRows"></div>
+
+        <button type="button" class="add-item-btn" id="addItemBtn">
+          + Add another item
+        </button>
+
+        <div class="card" style="margin-top:1rem;">
+          <div class="card-header"><span class="icon">📅</span> Order Settings</div>
+          <div class="field-group">
+            <div>
+              <label>Due date</label>
+              <input type="date" name="due_date" id="dueDate">
+            </div>
+            <div>
+              <label>Priority</label>
+              <select name="priority" id="priority">
+                {% for p in priorities %}
+                <option value="{{ p.value }}">{{ p.label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field-span2">
+              <label>Order notes</label>
+              <textarea name="order_notes" placeholder="Special instructions, urgency notes…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="totals-bar">
+          <div class="t-item"><div class="t-label">Subtotal</div><div class="t-value" id="subtotalView">$0.00</div></div>
+          <div class="t-item"><div class="t-label">Deposit</div><div class="t-value" id="depositView">$0.00</div></div>
+          <div class="t-item"><div class="t-label">Balance Due</div><div class="t-value balance" id="balanceView">$0.00</div></div>
+          <div class="t-item"><div class="t-label">Items</div><div class="t-value" id="itemCountView">0</div></div>
+        </div>
+      </section>
+
+      <!-- ── STEP 3: Measurements ──────────────────────── -->
+      <section data-step="3" class="hidden">
+        <div class="step-header">
+          <h1>Measurements</h1>
+          <p>Record body measurements for garments that require them.</p>
+        </div>
+        <div id="measurementSections"></div>
+      </section>
+
+      <!-- ── STEP 4: Delivery & Payment ───────────────── -->
+      <section data-step="4" class="hidden">
+        <div class="step-header">
+          <h1>Delivery & Payment</h1>
+          <p>Choose delivery method and record any deposit received.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="icon">🚚</span> Delivery Method</div>
+          <div
+            class="delivery-option selected"
+            data-method="pickup"
+            onclick="selectDelivery('pickup', this)"
+          >
+            <span class="icon">🏪</span>
+            <div><div class="label">In-store pickup</div><div class="desc">Customer collects at the shop</div></div>
+          </div>
+          <div
+            class="delivery-option"
+            data-method="home_delivery"
+            onclick="selectDelivery('home_delivery', this)"
+          >
+            <span class="icon">📦</span>
+            <div><div class="label">Home delivery</div><div class="desc">Shipped to customer's address</div></div>
+          </div>
+          <input type="hidden" name="delivery_method" id="deliveryMethodInput" value="pickup">
+        </div>
+
+        <div class="card hidden" id="deliveryAddressCard">
+          <div class="card-header"><span class="icon">📍</span> Delivery Details</div>
+          <div class="field-group">
+            <div class="field-span2">
+              <label>Delivery address</label>
+              <input type="text" name="delivery_address" id="deliveryAddress" placeholder="Full delivery address">
+            </div>
+            <div>
+              <label>Requested delivery date</label>
+              <input type="date" name="delivery_date">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="icon">💰</span> Payment & Deposit</div>
+          <div class="field-group">
+            <div>
+              <label>Deposit method</label>
+              <select name="deposit_method">
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+                <option value="transfer">Bank Transfer</option>
+              </select>
+            </div>
+            <div>
+              <label>Deposit amount received today</label>
+              <input type="number" name="deposit_amount" id="depositAmountInput" step="0.01" min="0" value="0" placeholder="0.00">
+            </div>
+          </div>
+          <div class="totals-bar" style="margin-top:.75rem;">
+            <div class="t-item"><div class="t-label">Order Total</div><div class="t-value" id="finalTotalView">$0.00</div></div>
+            <div class="t-item"><div class="t-label">Deposit Today</div><div class="t-value" id="finalDepositView">$0.00</div></div>
+            <div class="t-item"><div class="t-label">Balance on Pickup</div><div class="t-value balance" id="finalBalanceView">$0.00</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="icon">📝</span> Internal Notes</div>
+          <textarea name="internal_notes" placeholder="Notes for staff only — not shown to customer…"></textarea>
+        </div>
+      </section>
+
+      <!-- Actions bar -->
+      <div class="actions-bar">
+        <button type="button" class="btn" id="backBtn" style="visibility:hidden">← Back</button>
+        <div style="display:flex; gap:.6rem; align-items:center;">
+          <span id="stepIndicator" style="color:var(--muted); font-size:.82rem; margin-right:.3rem;"></span>
+          <button type="button" class="btn primary" id="nextBtn">Next →</button>
+          <button type="submit" class="btn success hidden" id="saveBtn">✓ Save Order &amp; Generate Tickets</button>
+        </div>
+      </div>
+
+    </form>
+  </main>
+</div>
+
+<script>
+// ── Data from Django ───────────────────────────────────────────────────────
+const CATALOGUE = JSON.parse(document.getElementById("catalogue-items-data").textContent);
+const EMPLOYEES = JSON.parse(document.getElementById("employees-data").textContent);
+const ALL_CUSTOMERS = JSON.parse(document.getElementById("customers-data").textContent);
+const MATERIALS = JSON.parse(document.getElementById("materials-data").textContent);
+
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  step: 1,
+  customer: null,
+  isNewCustomer: false,
+  items: [],
+  deposit: 0,
+};
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const money = v => "$" + Number(v || 0).toFixed(2);
+
+function nameToColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return `hsl(${Math.abs(h % 360)}, 60%, 42%)`;
+}
+
+function initials(name) {
+  const parts = name.trim().split(" ");
+  return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase();
+}
+
+// ── Stepper ────────────────────────────────────────────────────────────────
+const sections = Array.from(document.querySelectorAll("[data-step]"));
+const navItems = Array.from(document.querySelectorAll("[data-goto]"));
+
+function updateStepper() {
+  sections.forEach(s => s.classList.toggle("hidden", Number(s.dataset.step) !== state.step));
+  navItems.forEach(nav => {
+    const n = Number(nav.dataset.goto);
+    nav.classList.toggle("active", n === state.step);
+    nav.classList.toggle("done", n < state.step);
+  });
+  $("backBtn").style.visibility = state.step === 1 ? "hidden" : "visible";
+  $("nextBtn").classList.toggle("hidden", state.step === 4);
+  $("saveBtn").classList.toggle("hidden", state.step !== 4);
+  $("stepIndicator").textContent = `Step ${state.step} of 4`;
+
+  // Skip measurements if nothing needs them
+  if (state.step === 3) buildMeasurementSections();
+}
+
+navItems.forEach(nav => {
+  nav.addEventListener("click", () => {
+    const target = Number(nav.dataset.goto);
+    if (target < state.step) { state.step = target; updateStepper(); }
+  });
+});
+
+// ── Step 1: Customer ───────────────────────────────────────────────────────
+const customerSearch = $("customerSearch");
+const customerDropdown = $("customerDropdown");
+
+function renderCustomerDropdown(results) {
+  if (!results.length) {
+    customerDropdown.innerHTML = '<div style="padding:.7rem;color:var(--muted);font-size:.85rem;">No customers found. Try a different term or register below.</div>';
+  } else {
+    customerDropdown.innerHTML = results.map(c => `
+      <div class="customer-option" data-customer='${JSON.stringify(c).replace(/'/g, "&#39;")}'>
+        <div>
+          <div class="name">${c.name}</div>
+          <div class="meta">${c.phone || "No phone"} ${c.email ? "· " + c.email : ""}</div>
+        </div>
+        <span class="badge">${c.order_count} order${c.order_count !== 1 ? "s" : ""}</span>
+      </div>
+    `).join("");
+  }
+  customerDropdown.classList.remove("hidden");
+}
+
+customerSearch.addEventListener("input", e => {
+  const q = e.target.value.toLowerCase().trim();
+  if (!q) { customerDropdown.classList.add("hidden"); return; }
+  const filtered = ALL_CUSTOMERS.filter(c =>
+    c.name.toLowerCase().includes(q) ||
+    (c.phone || "").includes(q) ||
+    (c.email || "").toLowerCase().includes(q)
+  ).slice(0, 10);
+  renderCustomerDropdown(filtered);
+});
+
+customerSearch.addEventListener("focus", () => {
+  if (customerSearch.value.trim()) renderCustomerDropdown(
+    ALL_CUSTOMERS.filter(c => c.name.toLowerCase().includes(customerSearch.value.toLowerCase())).slice(0, 10)
+  );
+});
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".customer-select-wrap")) customerDropdown.classList.add("hidden");
+});
+
+customerDropdown.addEventListener("click", e => {
+  const opt = e.target.closest(".customer-option");
+  if (!opt) return;
+  const c = JSON.parse(opt.dataset.customer);
+  selectCustomer(c);
+});
+
+function selectCustomer(c) {
+  state.customer = c;
+  state.isNewCustomer = false;
+  $("customerId").value = c.id;
+  $("createNewCustomer").value = "0";
+
+  // Show selected card
+  $("customerSearchCard").classList.add("hidden");
+  $("newCustomerToggle").classList.add("hidden");
+  $("newCustomerForm").classList.add("hidden");
+  $("selectedCustomerCard").classList.remove("hidden");
+
+  const avatar = $("customerAvatar");
+  avatar.textContent = initials(c.name);
+  avatar.style.background = nameToColor(c.name);
+
+  $("selectedName").textContent = c.name;
+  const meta = [c.phone, c.email, c.address, `${c.order_count} previous order${c.order_count !== 1 ? "s" : ""}`].filter(Boolean);
+  $("selectedMeta").textContent = meta.join(" · ");
+
+  // Update sidebar
+  $("summaryCustomer").textContent = c.name;
+
+  // Prefill delivery address
+  $("deliveryAddress").value = c.address || "";
+
+  // Fetch measurements
+  fetch(`/shop/api/customer/${c.id}/measurements/`)
+    .then(r => r.json())
+    .then(data => { state.savedMeasurements = data; });
+}
+
+$("changeCustomerBtn").addEventListener("click", () => {
+  state.customer = null;
+  $("customerId").value = "";
+  $("customerSearchCard").classList.remove("hidden");
+  $("newCustomerToggle").classList.remove("hidden");
+  $("selectedCustomerCard").classList.add("hidden");
+  customerSearch.value = "";
+  $("summaryCustomer").textContent = "—";
+});
+
+// New customer toggle
+$("toggleNewCustomer").addEventListener("click", () => {
+  const form = $("newCustomerForm");
+  const isHidden = form.classList.contains("hidden");
+  form.classList.toggle("hidden", !isHidden);
+  $("customerSearchCard").classList.toggle("hidden", isHidden);
+  if (isHidden) {
+    state.isNewCustomer = true;
+    state.customer = null;
+    $("customerId").value = "";
+    $("createNewCustomer").value = "1";
+    $("selectedCustomerCard").classList.add("hidden");
+    $("summaryCustomer").textContent = "New customer";
+    $("toggleNewCustomer").textContent = "← Back to search";
+  } else {
+    state.isNewCustomer = false;
+    $("createNewCustomer").value = "0";
+    $("summaryCustomer").textContent = "—";
+    $("toggleNewCustomer").textContent = "+ Register new customer";
+  }
+});
+
+// ── Step 2: Items ──────────────────────────────────────────────────────────
+function buildItemRow(idx) {
+  const catalogueOptions = CATALOGUE.map(c =>
+    `<option value="${c.id}" data-source="${c.source}">${c.name}  —  $${Number(c.base_price).toFixed(2)}</option>`
+  ).join("");
+  const employeeOptions = EMPLOYEES.map(e =>
+    `<option value="${e.id}">${e.name}${e.role ? " (" + e.role + ")" : ""}</option>`
+  ).join("");
+  const materialOptions = MATERIALS.map(m =>
+    `<option value="${m.id}" data-color="${m.color || ""}">${m.name}${m.color ? " — " + m.color : ""}${m.stock_quantity !== null ? " (stock: " + m.stock_quantity + ")" : ""}</option>`
+  ).join("");
+
+  const div = document.createElement("div");
+  div.className = "item-card";
+  div.dataset.index = idx;
+  div.innerHTML = `
+    <div class="item-card-header">
+      <span class="item-label">Item ${idx + 1}</span>
+      <button type="button" class="remove-btn" onclick="removeItem(${idx})">Remove</button>
+    </div>
+    <div class="field-group cols3">
+      <div class="field-span2">
+        <label>Service / Catalogue <span class="req">*</span></label>
+        <select data-field="catalogue_item_id">
+          <option value="">— Choose a service —</option>
+          ${catalogueOptions}
+        </select>
+        <div class="hint" data-price-hint></div>
+      </div>
+      <div>
+        <label>Garment type</label>
+        <select data-field="garment_type">
+          <option value="">— Select after service —</option>
+        </select>
+      </div>
+      <div>
+        <label>Material / Fabric</label>
+        <select data-field="material_id">
+          <option value="">— Select material —</option>
+          ${materialOptions}
+        </select>
+      </div>
+      <div>
+        <label>Color</label>
+        <input type="text" data-field="color_fabric" placeholder="e.g. Navy blue" list="colorSuggestions">
+      </div>
+      <div>
+        <label>Quantity</label>
+        <input type="number" data-field="quantity" value="1" min="1">
+      </div>
+      <div>
+        <label>Unit price</label>
+        <div style="position:relative;">
+          <input type="number" data-field="unit_price" step="0.01" value="0.00">
+          <span data-price-badge class="price-chip" style="margin-top:.25rem;"></span>
+        </div>
+      </div>
+      <div>
+        <label>Assigned employee</label>
+        <select data-field="assigned_employee_id">
+          <option value="">Assign later</option>
+          ${employeeOptions}
+        </select>
+      </div>
+      <div class="field-span3">
+        <label>Item notes (design details, special requests)</label>
+        <textarea data-field="item_notes" placeholder="e.g. Extra padding on shoulders, shorter hem by 3cm…" style="min-height:56px;"></textarea>
+      </div>
+    </div>
+  `;
+  return div;
+}
+
+const itemRowsEl = $("itemRows");
+
+function addItem() {
+  const idx = state.items.length;
+  state.items.push({
+    catalogue_item_id: "", catalogue_source: "catalogue_item",
+    garment_type: "", color_fabric: "", unit_price: "0.00",
+    quantity: 1, item_notes: "", assigned_employee_id: "",
+    price_overridden: false, requires_measurements: true,
+    measurements: {},
+  });
+  const row = buildItemRow(idx);
+  itemRowsEl.appendChild(row);
+  attachRowListeners(row, idx);
+  recalcTotals();
+}
+
+function removeItem(idx) {
+  if (state.items.length <= 1) { alert("An order must have at least one item."); return; }
+  state.items.splice(idx, 1);
+  // Rebuild all rows
+  const savedItems = [...state.items];
+  state.items = [];
+  itemRowsEl.innerHTML = "";
+  savedItems.forEach((itemData, i) => {
+    state.items.push(itemData);
+    const row = buildItemRow(i);
+    itemRowsEl.appendChild(row);
+    attachRowListeners(row, i);
+    populateRowFromState(row, i);
+  });
+  recalcTotals();
+}
+
+function populateRowFromState(row, idx) {
+  const it = state.items[idx];
+  if (!it) return;
+  const fields = ["catalogue_item_id", "garment_type", "color_fabric", "unit_price", "quantity", "assigned_employee_id", "item_notes"];
+  fields.forEach(f => {
+    const el = row.querySelector(`[data-field="${f}"]`);
+    if (el && it[f] !== undefined) el.value = it[f];
+  });
+}
+
+function attachRowListeners(row, idx) {
+  row.addEventListener("change", e => {
+    const field = e.target.dataset.field;
+    if (!field) return;
+    state.items[idx][field] = e.target.value;
+
+    if (field === "catalogue_item_id" && e.target.value) {
+      const opt = e.target.options[e.target.selectedIndex];
+      const source = opt?.dataset?.source || "catalogue_item";
+      state.items[idx].catalogue_source = source;
+
+      const cat = CATALOGUE.find(c => String(c.id) === String(e.target.value));
+      if (cat) {
+        // Auto-fill garment types
+        const gSelect = row.querySelector('[data-field="garment_type"]');
+        const types = Array.isArray(cat.garment_types) && cat.garment_types.length ? cat.garment_types : [cat.name];
+        gSelect.innerHTML = `<option value="">— Select type —</option>` + types.map(t => `<option value="${t}">${t}</option>`).join("");
+        if (types.length === 1) { gSelect.value = types[0]; state.items[idx].garment_type = types[0]; }
+
+        // Auto-fill price
+        const price = parseFloat(cat.base_price) || 0;
+        state.items[idx].unit_price = price.toFixed(2);
+        state.items[idx].price_overridden = false;
+        state.items[idx].requires_measurements = cat.requires_measurements;
+        const priceInput = row.querySelector('[data-field="unit_price"]');
+        priceInput.value = price.toFixed(2);
+        row.querySelector("[data-price-hint]").textContent = cat.price_hint || "";
+        setBadge(row, "ok");
+        recalcTotals();
+      }
+    }
+
+    if (field === "unit_price") {
+      state.items[idx].price_overridden = true;
+      setBadge(row, "modified");
+      recalcTotals();
+    }
+    if (field === "quantity") { recalcTotals(); }
+  });
+
+  row.addEventListener("input", e => {
+    const field = e.target.dataset.field;
+    if (!field) return;
+    state.items[idx][field] = e.target.value;
+    if (field === "unit_price") { state.items[idx].price_overridden = true; setBadge(row, "modified"); }
+    if (field === "quantity" || field === "unit_price") recalcTotals();
+  });
+}
+
+function setBadge(row, type) {
+  const badge = row.querySelector("[data-price-badge]");
+  if (!badge) return;
+  badge.className = `price-chip ${type}`;
+  badge.textContent = type === "ok" ? "✓ Auto-filled" : "✎ Modified";
+}
+
+function recalcTotals() {
+  const subtotal = state.items.reduce((s, it) => s + (parseFloat(it.unit_price || 0) * parseInt(it.quantity || 1)), 0);
+  const deposit = parseFloat($("depositAmountInput")?.value || 0);
+  state.deposit = deposit;
+  const balance = Math.max(subtotal - deposit, 0);
+
+  $("subtotalView").textContent = money(subtotal);
+  $("depositView").textContent = money(deposit);
+  $("balanceView").textContent = money(balance);
+  $("itemCountView").textContent = state.items.length;
+
+  $("finalTotalView").textContent = money(subtotal);
+  $("finalDepositView").textContent = money(deposit);
+  $("finalBalanceView").textContent = money(balance);
+
+  $("summarySubtotal").textContent = money(subtotal);
+  $("summaryDeposit").textContent = money(deposit);
+  $("summaryBalance").textContent = money(balance);
+  $("summaryItems").textContent = state.items.length;
+}
+
+$("addItemBtn").addEventListener("click", addItem);
+
+if ($("depositAmountInput")) {
+  $("depositAmountInput").addEventListener("input", recalcTotals);
+}
+
+// ── Step 3: Measurements ───────────────────────────────────────────────────
+const MEAS_FIELDS = ["bust", "waist", "hips", "shoulder", "sleeve", "length", "inseam", "neck"];
+
+function buildMeasurementSections() {
+  const container = $("measurementSections");
+  container.innerHTML = "";
+
+  const needsMeasurements = state.items.filter(it => it.requires_measurements);
+  if (needsMeasurements.length === 0) {
+    container.innerHTML = `<div class="no-measure-note">
+      <strong>No measurements required</strong><br>
+      None of the selected services require body measurements. Click Next to continue.
+    </div>`;
+    return;
+  }
+
+  const saved = state.savedMeasurements || {};
+  const hasPreFill = saved.from_order_date;
+
+  if (hasPreFill) {
+    container.insertAdjacentHTML("beforeend", `
+      <div class="alert info">
+        Measurements pre-filled from previous order on <strong>${saved.from_order_date}</strong>.
+        Update any that have changed.
+      </div>
+    `);
+  }
+
+  // One shared measurement section (applies to all items needing it)
+  const section = document.createElement("div");
+  section.className = "card";
+  section.innerHTML = `
+    <div class="card-header"><span class="icon">📏</span> Body Measurements (cm)</div>
+    <div class="measurement-grid">
+      ${MEAS_FIELDS.map(f => `
+        <div class="${hasPreFill && saved[f] ? "meas-prefilled" : ""}">
+          <label>${f.charAt(0).toUpperCase() + f.slice(1)}</label>
+          <input type="number" step="0.5" data-measurement="${f}" placeholder="—"
+            value="${hasPreFill && saved[f] ? saved[f] : ""}">
+        </div>
+      `).join("")}
+    </div>
+    <div style="margin-top:.7rem;">
+      <label>Measurement notes</label>
+      <textarea data-measurement="notes" placeholder="e.g. Posture notes, fitting preferences…">${hasPreFill && saved.notes ? saved.notes : ""}</textarea>
+    </div>
+    ${hasPreFill ? `<span class="meas-source">↩ Pre-filled from ${saved.from_order_date}</span>` : ""}
+  `;
+  container.appendChild(section);
+
+  // Listen for changes to mark as user-modified
+  container.querySelectorAll("[data-measurement]").forEach(el => {
+    el.addEventListener("input", () => el.closest("div")?.classList.remove("meas-prefilled"));
+  });
+}
+
+// ── Delivery ───────────────────────────────────────────────────────────────
+function selectDelivery(method, el) {
+  document.querySelectorAll(".delivery-option").forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+  $("deliveryMethodInput").value = method;
+  $("deliveryAddressCard").classList.toggle("hidden", method !== "home_delivery");
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+$("nextBtn").addEventListener("click", () => {
+  if (state.step === 1) {
+    const isNew = $("createNewCustomer").value === "1";
+    if (!isNew && !state.customer) {
+      alert("Please select a customer or register a new one.");
+      return;
+    }
+    if (isNew) {
+      const fn = $("newFirstName").value.trim();
+      const ln = $("newLastName").value.trim();
+      if (!fn || !ln) { alert("First and last name are required for a new customer."); return; }
+      $("summaryCustomer").textContent = fn + " " + ln;
+    }
+  }
+  if (state.step === 2) {
+    if (state.items.length === 0) { alert("Add at least one item before continuing."); return; }
+    const hasEmpty = state.items.some(it => !it.catalogue_item_id);
+    if (hasEmpty) { alert("Please select a service from the catalogue for each item."); return; }
+  }
+  state.step = Math.min(4, state.step + 1);
+  updateStepper();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+$("backBtn").addEventListener("click", () => {
+  state.step = Math.max(1, state.step - 1);
+  updateStepper();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+// ── Form Submit ────────────────────────────────────────────────────────────
+$("wizardForm").addEventListener("submit", e => {
+  const isNew = $("createNewCustomer").value === "1";
+  if (!isNew && !state.customer) { e.preventDefault(); alert("No customer selected."); return; }
+  if (state.items.length === 0) { e.preventDefault(); alert("No items added."); return; }
+
+  // Collect shared measurements
+  const measurements = {};
+  document.querySelectorAll("[data-measurement]").forEach(el => {
+    measurements[el.dataset.measurement] = el.value || null;
+  });
+  // Attach measurements to each item that needs them
+  state.items.forEach(it => {
+    if (it.requires_measurements) it.measurements = measurements;
+  });
+
+  $("itemsJson").value = JSON.stringify(state.items);
+  $("measurementsJson").value = JSON.stringify(measurements);
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────
+addItem();  // Start with one item row
+recalcTotals();
+updateStepper();
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+/* ── Smart Order Flow Panel ───────────────────────────────────────────── */
+.order-flow-panel {
+  background: linear-gradient(135deg, #1e2840 0%, #2d3a5a 100%);
+  color: #f3f4f6;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .18);
+}
+
+.order-flow-panel h3 {
+  margin: 0 0 .75rem;
+  font-size: .88rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+}
+
+.order-flow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .75rem;
+}
+
+.order-flow-kpi {
+  background: rgba(255, 255, 255, .07);
+  border-radius: 8px;
+  padding: .55rem .75rem;
+}
+
+.order-flow-kpi span {
+  display: block;
+  font-size: .72rem;
+  color: #94a3b8;
+  margin-bottom: .2rem;
+}
+
+.order-flow-kpi strong {
+  font-size: .95rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── Price chips ─────────────────────────────────────────────────────── */
+.order-flow-chip {
+  display: inline-block;
+  margin-left: .4rem;
+  padding: .15rem .45rem;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.order-flow-chip.autofilled {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.order-flow-chip.modified {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+}
+
+/* ── Admin list improvements ─────────────────────────────────────────── */
+.field-catalogue_item .help,
+.field-unit_price .help,
+.field-final_price .help {
+  font-size: .78rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Responsive grid */
+@media (max-width: 900px) {
+  .order-flow-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

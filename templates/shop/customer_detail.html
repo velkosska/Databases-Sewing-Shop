@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ customer.full_name }} — Customer History</title>
+<style>
+:root {
+  --bg: #f4f7fb; --panel: #fff; --border: #dbe3ec; --brand: #1e2840;
+  --brand-light: #5677b5; --muted: #6b7280; --danger: #dc2626;
+  --warning: #d97706; --success: #16a34a;
+  --success-bg: #dcfce7; --info-bg: #dbeafe; --info: #2563eb;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; background: var(--bg); color: #111827; font-size: 14px; }
+
+.header { background: var(--brand); color: #fff; padding: .9rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { margin: 0; font-size: 1.1rem; }
+.btn { display: inline-flex; align-items: center; gap: .3rem; border-radius: 7px; padding: .38rem .7rem; font-weight: 600; font-size: .82rem; cursor: pointer; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; text-decoration: none; }
+
+.body { max-width: 1100px; margin: 1.25rem auto; padding: 0 1.25rem 2.5rem; }
+
+.profile-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.1rem; display: flex; gap: 1.25rem; align-items: flex-start; }
+.avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; font-weight: 800; flex-shrink: 0; }
+.profile-info h2 { margin: 0 0 .25rem; font-size: 1.2rem; }
+.profile-info .meta { color: var(--muted); font-size: .85rem; display: flex; flex-wrap: wrap; gap: .6rem; }
+.profile-info .meta span { display: flex; align-items: center; gap: .25rem; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; margin-bottom: 1.1rem; }
+.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: .7rem 1rem; }
+.stat-card .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem; }
+.stat-card .value { font-size: 1.35rem; font-weight: 800; }
+
+.grid2 { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; margin-bottom: 1rem; }
+.card h3 { margin: 0 0 .85rem; font-size: .95rem; font-weight: 700; display: flex; align-items: center; gap: .4rem; }
+
+.order-row { border: 1px solid var(--border); border-radius: 8px; padding: .75rem; margin-bottom: .5rem; transition: .15s; }
+.order-row:hover { border-color: var(--brand-light); background: #f8fbff; }
+.order-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: .3rem; }
+.order-row-top .order-id { font-weight: 700; color: var(--muted); font-size: .82rem; }
+.order-row-meta { font-size: .8rem; color: var(--muted); display: flex; gap: .75rem; flex-wrap: wrap; }
+.order-row-items { margin-top: .4rem; display: flex; flex-wrap: wrap; gap: .3rem; }
+.item-chip { font-size: .74rem; background: var(--info-bg); color: var(--info); border-radius: 999px; padding: .12rem .45rem; }
+
+.badge { display: inline-block; border-radius: 999px; padding: .16rem .5rem; font-size: .72rem; font-weight: 600; }
+.s-pending { color: #92400e; background: #fef3c7; }
+.s-in-production { color: #1d4ed8; background: var(--info-bg); }
+.s-completed { color: #166534; background: var(--success-bg); }
+.s-delivered { color: #115e59; background: #ccfbf1; }
+.s-overdue { color: #991b1b; background: #fee2e2; }
+
+.meas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.meas-row { display: flex; justify-content: space-between; padding: .35rem 0; border-bottom: 1px solid #f1f5f9; font-size: .85rem; }
+.meas-row .field { color: var(--muted); }
+.meas-row .val { font-weight: 700; }
+
+.notes-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 7px; padding: .65rem; font-size: .85rem; color: #374151; white-space: pre-wrap; }
+
+@media (max-width: 780px) { .grid2 { grid-template-columns: 1fr; } .stats-row { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Customer: {{ customer.full_name }}</h1>
+  <div style="display:flex;gap:.5rem;">
+    <a href="/" class="btn">← Dashboard</a>
+    <a href="/admin/shop/customer/{{ customer.pk }}/change/" class="btn">Edit in Admin</a>
+    <a href="/orders/new/" class="btn" style="background:var(--success);border-color:var(--success)">+ New Order</a>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- Profile -->
+  <div class="profile-card">
+    {% with initials=customer.first_name|slice:":1"|add:customer.last_name|slice:":1" %}
+    <div class="avatar" style="background: hsl({{ customer.pk|add:'100' }}, 55%, 42%)">{{ initials|upper }}</div>
+    {% endwith %}
+    <div class="profile-info">
+      <h2>{{ customer.full_name }}</h2>
+      <div class="meta">
+        {% if customer.phone %}<span>📞 {{ customer.phone }}</span>{% endif %}
+        {% if customer.email %}<span>✉ {{ customer.email }}</span>{% endif %}
+        {% if customer.address %}<span>📍 {{ customer.address }}</span>{% endif %}
+        <span>🗓 Customer since {{ customer.created_at }}</span>
+      </div>
+      {% if customer.notes %}
+      <div style="margin-top:.6rem; font-size:.83rem; color:var(--muted);">{{ customer.notes }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="label">Total Orders</div>
+      <div class="value">{{ order_count }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Spent</div>
+      <div class="value">${{ total_spent|floatformat:2 }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Active Orders</div>
+      <div class="value" style="color:var(--info)">
+        {{ orders|length }}
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Has Measurements</div>
+      <div class="value" style="color:{% if latest_measurement %}var(--success){% else %}var(--muted){% endif %}">
+        {% if latest_measurement %}Yes{% else %}No{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+
+    <!-- Orders -->
+    <div>
+      <div class="card">
+        <h3>🗂 Order History</h3>
+        {% if orders %}
+          {% for order in orders %}
+          <div class="order-row">
+            <div class="order-row-top">
+              <a href="/admin/shop/order/{{ order.pk }}/change/" style="color:var(--brand);font-weight:700;text-decoration:none">#{{ order.pk }}</a>
+              {% with ns=order.status %}
+              <span class="badge s-{{ ns|cut:"_" }}">{{ order.get_status_display }}</span>
+              {% endwith %}
+            </div>
+            <div class="order-row-meta">
+              <span>📅 {{ order.order_date }}</span>
+              {% if order.due_date %}<span>⏰ Due: {{ order.due_date }}</span>{% endif %}
+              {% if order.total_price %}<span>💰 ${{ order.total_price|floatformat:2 }}</span>{% endif %}
+            </div>
+            <div class="order-row-items">
+              {% for item in order.items.all|slice:":5" %}
+              <span class="item-chip">{{ item.garment_type|default:item.catalogue_item.name|default:"Item" }}</span>
+              {% endfor %}
+              {% if order.items.count > 5 %}<span class="item-chip">+{{ order.items.count|add:"-5" }} more</span>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--muted);text-align:center;padding:1.5rem 0;">No orders yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Measurements & Notes -->
+    <div>
+      <div class="card">
+        <h3>📏 Latest Measurements</h3>
+        {% if latest_measurement %}
+        <div style="font-size:.76rem;color:var(--muted);margin-bottom:.6rem;">Recorded: {{ latest_measurement.created_at|date:"M d, Y" }}</div>
+        <div class="meas-grid">
+          {% if latest_measurement.bust %}<div class="meas-row"><span class="field">Bust</span><span class="val">{{ latest_measurement.bust }} cm</span></div>{% endif %}
+          {% if latest_measurement.waist %}<div class="meas-row"><span class="field">Waist</span><span class="val">{{ latest_measurement.waist }} cm</span></div>{% endif %}
+          {% if latest_measurement.hips %}<div class="meas-row"><span class="field">Hips</span><span class="val">{{ latest_measurement.hips }} cm</span></div>{% endif %}
+          {% if latest_measurement.shoulder %}<div class="meas-row"><span class="field">Shoulder</span><span class="val">{{ latest_measurement.shoulder }} cm</span></div>{% endif %}
+          {% if latest_measurement.sleeve %}<div class="meas-row"><span class="field">Sleeve</span><span class="val">{{ latest_measurement.sleeve }} cm</span></div>{% endif %}
+          {% if latest_measurement.length %}<div class="meas-row"><span class="field">Length</span><span class="val">{{ latest_measurement.length }} cm</span></div>{% endif %}
+          {% if latest_measurement.inseam %}<div class="meas-row"><span class="field">Inseam</span><span class="val">{{ latest_measurement.inseam }} cm</span></div>{% endif %}
+          {% if latest_measurement.neck %}<div class="meas-row"><span class="field">Neck</span><span class="val">{{ latest_measurement.neck }} cm</span></div>{% endif %}
+        </div>
+        {% if latest_measurement.notes %}
+        <div style="margin-top:.6rem;font-size:.8rem;color:var(--muted);">{{ latest_measurement.notes }}</div>
+        {% endif %}
+        {% else %}
+        <p style="color:var(--muted);font-size:.85rem;">No measurements recorded yet. They will be saved when creating an order.</p>
+        {% endif %}
+      </div>
+
+      {% if customer.notes %}
+      <div class="card">
+        <h3>📝 Customer Notes</h3>
+        <div class="notes-box">{{ customer.notes }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

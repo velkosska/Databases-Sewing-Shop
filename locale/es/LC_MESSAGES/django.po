@@ -1,0 +1,362 @@
+# Spanish translations for Sewing Shop admin
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# ── App name (breadcrumb) ──────────────────────────────────────────────────
+msgid "Shop"
+msgstr "Tienda"
+
+# ── Sidebar section titles ─────────────────────────────────────────────────
+msgid "Customers & Orders"
+msgstr "Clientes y Pedidos"
+
+msgid "Production"
+msgstr "Producción"
+
+msgid "Resources"
+msgstr "Recursos"
+
+# ── Sidebar item titles ────────────────────────────────────────────────────
+msgid "Customers"
+msgstr "Clientes"
+
+msgid "Orders"
+msgstr "Pedidos"
+
+msgid "Order Items"
+msgstr "Artículos de Pedido"
+
+msgid "Work Tickets"
+msgstr "Órdenes de Trabajo"
+
+msgid "Production Stages"
+msgstr "Etapas de Producción"
+
+msgid "Measurements"
+msgstr "Medidas"
+
+msgid "Employees"
+msgstr "Empleados"
+
+msgid "Materials"
+msgstr "Materiales"
+
+msgid "Deliveries"
+msgstr "Entregas"
+
+# ── Model verbose names ────────────────────────────────────────────────────
+msgid "Customer"
+msgstr "Cliente"
+
+msgid "Employee"
+msgstr "Empleado"
+
+msgid "Material"
+msgstr "Material"
+
+msgid "Catalogue"
+msgstr "Catálogo"
+
+msgid "Catalogue Item"
+msgstr "Artículo del Catálogo"
+
+msgid "Catalogue Items"
+msgstr "Artículos del Catálogo"
+
+msgid "Order"
+msgstr "Pedido"
+
+msgid "Order Item"
+msgstr "Artículo del Pedido"
+
+msgid "Measurement"
+msgstr "Medida"
+
+msgid "Order Item Measurement"
+msgstr "Medida del Artículo"
+
+msgid "Order Item Measurements"
+msgstr "Medidas del Artículo"
+
+msgid "Work Ticket"
+msgstr "Orden de Trabajo"
+
+msgid "Production Stage"
+msgstr "Etapa de Producción"
+
+msgid "Delivery"
+msgstr "Entrega"
+
+msgid "Order Item Material"
+msgstr "Material del Artículo"
+
+msgid "Order Item Materials"
+msgstr "Materiales del Artículo"
+
+# ── Model help texts ───────────────────────────────────────────────────────
+msgid "Alert when stock drops below this quantity."
+msgstr "Alertar cuando el stock baje de esta cantidad."
+
+msgid "Amount paid as deposit at time of order."
+msgstr "Cantidad pagada como depósito al realizar el pedido."
+
+# ── Order status choices ───────────────────────────────────────────────────
+msgid "Pending"
+msgstr "Pendiente"
+
+msgid "In Production"
+msgstr "En Producción"
+
+msgid "Completed"
+msgstr "Completado"
+
+msgid "Delivered"
+msgstr "Entregado"
+
+# ── Payment status choices ─────────────────────────────────────────────────
+msgid "Unpaid"
+msgstr "Sin pagar"
+
+msgid "Deposit Paid"
+msgstr "Depósito Pagado"
+
+msgid "Fully Paid"
+msgstr "Totalmente Pagado"
+
+# ── Work ticket status choices ─────────────────────────────────────────────
+msgid "In Progress"
+msgstr "En Progreso"
+
+msgid "Done"
+msgstr "Terminado"
+
+# ── Work ticket priority choices ───────────────────────────────────────────
+msgid "Low"
+msgstr "Baja"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "High"
+msgstr "Alta"
+
+msgid "Urgent"
+msgstr "Urgente"
+
+# ── Production stage choices ───────────────────────────────────────────────
+msgid "Order Received"
+msgstr "Pedido Recibido"
+
+msgid "Design Confirmed"
+msgstr "Diseño Confirmado"
+
+msgid "Cutting"
+msgstr "Corte"
+
+msgid "Sewing"
+msgstr "Costura"
+
+msgid "Finishing"
+msgstr "Acabado"
+
+msgid "Quality Check"
+msgstr "Control de Calidad"
+
+msgid "Ready for Delivery"
+msgstr "Listo para Entrega"
+
+# ── Delivery method choices ────────────────────────────────────────────────
+msgid "Pickup"
+msgstr "Recogida"
+
+msgid "Courier"
+msgstr "Mensajería"
+
+msgid "In Store"
+msgstr "En Tienda"
+
+# ── Admin column headers (descriptions) ───────────────────────────────────
+msgid "Order #"
+msgstr "Pedido #"
+
+msgid "Items"
+msgstr "Artículos"
+
+msgid "Order date"
+msgstr "Fecha del pedido"
+
+msgid "Due Date"
+msgstr "Fecha límite"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Payment"
+msgstr "Pago"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Active Tickets"
+msgstr "Tickets Activos"
+
+msgid "Stock Status"
+msgstr "Estado de Existencias"
+
+msgid "Garment Types"
+msgstr "Tipos de Prenda"
+
+msgid "Ticket"
+msgstr "Ticket"
+
+msgid "Garment"
+msgstr "Prenda"
+
+msgid "Priority"
+msgstr "Prioridad"
+
+msgid "Deadline"
+msgstr "Fecha límite"
+
+msgid "Delivered?"
+msgstr "¿Entregado?"
+
+# ── Admin action descriptions ──────────────────────────────────────────────
+msgid "Mark selected orders as In Production"
+msgstr "Marcar pedidos seleccionados como En Producción"
+
+msgid "Mark selected orders as Completed"
+msgstr "Marcar pedidos seleccionados como Completados"
+
+msgid "Mark selected orders as Delivered"
+msgstr "Marcar pedidos seleccionados como Entregados"
+
+msgid "Mark selected work tickets as In Progress"
+msgstr "Marcar tickets seleccionados como En Progreso"
+
+msgid "Mark selected work tickets as Done"
+msgstr "Marcar tickets seleccionados como Terminados"
+
+# ── Action success messages ────────────────────────────────────────────────
+msgid "%(count)d order marked as In Production."
+msgstr "%(count)d pedido marcado como En Producción."
+
+msgid "%(count)d orders marked as In Production."
+msgstr "%(count)d pedidos marcados como En Producción."
+
+msgid "%(count)d order marked as Completed."
+msgstr "%(count)d pedido marcado como Completado."
+
+msgid "%(count)d orders marked as Completed."
+msgstr "%(count)d pedidos marcados como Completados."
+
+msgid "%(count)d order marked as Delivered."
+msgstr "%(count)d pedido marcado como Entregado."
+
+msgid "%(count)d orders marked as Delivered."
+msgstr "%(count)d pedidos marcados como Entregados."
+
+# ── Fieldset section titles ────────────────────────────────────────────────
+msgid "Contact Information"
+msgstr "Información de Contacto"
+
+msgid "Notes"
+msgstr "Notas"
+
+msgid "Employee Details"
+msgstr "Detalles del Empleado"
+
+msgid "Material Details"
+msgstr "Detalles del Material"
+
+msgid "Stock Alerts & Supplier"
+msgstr "Alertas de Stock y Proveedor"
+
+msgid "Set a threshold to get low-stock alerts on the dashboard."
+msgstr "Establece un umbral para recibir alertas de stock bajo en el panel."
+
+msgid "Service Details"
+msgstr "Detalles del Servicio"
+
+msgid "Options"
+msgstr "Opciones"
+
+msgid "Order Information"
+msgstr "Información del Pedido"
+
+msgid "Pricing & Payment"
+msgstr "Precios y Pago"
+
+msgid "Total price auto-calculates from items. Deposit is recorded at intake."
+msgstr "El precio total se calcula automáticamente a partir de los artículos. El depósito se registra al recibir el pedido."
+
+msgid "Item Details"
+msgstr "Detalles del Artículo"
+
+msgid "Assignment"
+msgstr "Asignación"
+
+msgid "Notes & Design"
+msgstr "Notas y Diseño"
+
+msgid "Ticket Details"
+msgstr "Detalles del Ticket"
+
+msgid "Delivery Details"
+msgstr "Detalles de Entrega"
+
+msgid "Comments"
+msgstr "Comentarios"
+
+# ── Inline verbose names ───────────────────────────────────────────────────
+msgid "Material used"
+msgstr "Material usado"
+
+msgid "Materials used"
+msgstr "Materiales usados"
+
+msgid "Order item"
+msgstr "Artículo del pedido"
+
+msgid "Order items"
+msgstr "Artículos del pedido"
+
+# ── Custom UI strings in admin methods ─────────────────────────────────────
+msgid "No orders"
+msgstr "Sin pedidos"
+
+msgid "%(n)d order"
+msgstr "%(n)d pedido"
+
+msgid "%(n)d orders"
+msgstr "%(n)d pedidos"
+
+msgid "No items"
+msgstr "Sin artículos"
+
+msgid "Item"
+msgstr "Artículo"
+
+msgid "more"
+msgstr "más"
+
+msgid "Not set"
+msgstr "Sin establecer"
+
+msgid "Not tracked"
+msgstr "Sin seguimiento"
+
+msgid "None"
+msgstr "Ninguno"
+
+msgid "d overdue"
+msgstr "d de retraso"
+
+msgid "d left"
+msgstr "d restantes"
+
+msgid "units"
+msgstr "unidades"

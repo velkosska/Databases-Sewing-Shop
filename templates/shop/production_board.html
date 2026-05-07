@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Production Board — Sewing Shop</title>
+<style>
+:root {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --border: #dbe3ec;
+  --brand: #1e2840;
+  --brand-light: #5677b5;
+  --muted: #6b7280;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --info: #2563eb;
+  --info-bg: #dbeafe;
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --pending-col: #fef9f0;
+  --progress-col: #f0f5ff;
+  --done-col: #f0fdf4;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; background: var(--bg); color: #111827; font-size: 14px; }
+
+.header { background: var(--brand); color: #fff; padding: .9rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { margin: 0; font-size: 1.15rem; }
+.header-right { display: flex; gap: .6rem; align-items: center; }
+
+.btn { display: inline-flex; align-items: center; gap: .3rem; border-radius: 7px; padding: .4rem .75rem; font-weight: 600; font-size: .82rem; cursor: pointer; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; font-family: inherit; text-decoration: none; transition: .15s; }
+.btn:hover { background: rgba(255,255,255,.18); }
+.btn.success { background: var(--success); border-color: var(--success); }
+
+.body { padding: 1.25rem; }
+
+.board-stats { display: flex; gap: .75rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+.board-stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: .6rem .9rem; min-width: 100px; }
+.board-stat .label { font-size: .74rem; color: var(--muted); margin-bottom: .15rem; }
+.board-stat .value { font-size: 1.3rem; font-weight: 800; }
+
+/* Filters */
+.filters { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.filter-pill { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: .3rem .7rem; font-size: .8rem; cursor: pointer; font-weight: 600; color: var(--muted); transition: .15s; }
+.filter-pill.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+/* Board columns */
+.board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.col { border-radius: 12px; padding: .8rem; }
+.col-pending { background: var(--pending-col); border: 1px solid #fde68a; }
+.col-progress { background: var(--progress-col); border: 1px solid #93c5fd; }
+.col-done { background: var(--done-col); border: 1px solid #86efac; }
+
+.col-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .75rem; }
+.col-title { font-weight: 800; font-size: .95rem; }
+.col-count { font-size: .8rem; color: var(--muted); background: rgba(0,0,0,.06); border-radius: 999px; padding: .1rem .45rem; }
+
+.ticket-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: .8rem; margin-bottom: .6rem; cursor: pointer; transition: .15s; }
+.ticket-card:hover { border-color: var(--brand-light); box-shadow: 0 2px 8px rgba(15,23,42,.08); transform: translateY(-1px); }
+.ticket-card.overdue { border-left: 3px solid var(--danger); }
+
+.ticket-top { display: flex; justify-content: space-between; align-items: flex-start; gap: .4rem; margin-bottom: .4rem; }
+.ticket-title { font-weight: 700; font-size: .9rem; flex: 1; }
+.priority-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.p-urgent { background: var(--danger); }
+.p-high { background: var(--warning); }
+.p-normal { background: var(--info); }
+.p-low { background: var(--muted); }
+
+.ticket-meta { font-size: .78rem; color: var(--muted); margin-bottom: .35rem; }
+.ticket-meta span { margin-right: .5rem; }
+
+.ticket-footer { display: flex; justify-content: space-between; align-items: center; margin-top: .45rem; }
+.ticket-stage { font-size: .75rem; background: #f1f5f9; border-radius: 999px; padding: .15rem .5rem; color: var(--muted); }
+.ticket-deadline { font-size: .75rem; }
+.ticket-deadline.overdue { color: var(--danger); font-weight: 700; }
+.ticket-deadline.warn { color: var(--warning); font-weight: 600; }
+
+.assigned-tag { font-size: .74rem; background: var(--info-bg); color: var(--info); border-radius: 999px; padding: .1rem .45rem; }
+
+.empty-col { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: .85rem; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.modal { background: #fff; border-radius: 14px; padding: 1.5rem; max-width: 480px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,.18); }
+.modal h3 { margin: 0 0 .9rem; font-size: 1.05rem; }
+.modal label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: .25rem; font-weight: 500; }
+.modal select { width: 100%; border: 1px solid var(--border); border-radius: 7px; padding: .5rem .65rem; font-size: .9rem; margin-bottom: .75rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: .5rem; }
+.btn-save { background: var(--brand); border: 1px solid var(--brand); color: #fff; border-radius: 7px; padding: .5rem .85rem; font-weight: 600; font-size: .85rem; cursor: pointer; }
+.btn-cancel { background: #fff; border: 1px solid var(--border); color: var(--muted); border-radius: 7px; padding: .5rem .85rem; font-weight: 600; font-size: .85rem; cursor: pointer; }
+
+@media (max-width: 900px) { .board { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧵 Production Board</h1>
+  <div class="header-right">
+    <span style="font-size:.82rem;opacity:.7">{{ today }}</span>
+    <a href="/" class="btn">← Dashboard</a>
+    <a href="/orders/new/" class="btn success">+ New Order</a>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- Stats -->
+  <div class="board-stats">
+    <div class="board-stat">
+      <div class="label">Pending</div>
+      <div class="value" style="color:var(--warning)">{{ pending_count }}</div>
+    </div>
+    <div class="board-stat">
+      <div class="label">In Progress</div>
+      <div class="value" style="color:var(--info)">{{ in_progress_count }}</div>
+    </div>
+    <div class="board-stat">
+      <div class="label">Done</div>
+      <div class="value" style="color:var(--success)">{{ done_count }}</div>
+    </div>
+    <div class="board-stat">
+      <div class="label">Total Active</div>
+      <div class="value">{{ pending_count|add:in_progress_count }}</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <span class="filter-pill active" data-priority="all">All Priorities</span>
+    <span class="filter-pill" data-priority="urgent">🔴 Urgent</span>
+    <span class="filter-pill" data-priority="high">🟠 High</span>
+    <span class="filter-pill" data-priority="normal">🔵 Normal</span>
+    <span class="filter-pill" data-priority="low">⚪ Low</span>
+    <span class="filter-pill" data-show-overdue="1" style="color:var(--danger);border-color:#fca5a5">⚠ Overdue only</span>
+  </div>
+
+  <!-- Board -->
+  <div class="board">
+
+    <!-- Pending column -->
+    <div class="col col-pending">
+      <div class="col-header">
+        <span class="col-title">📋 Pending</span>
+        <span class="col-count" id="pendingCount">{{ pending_count }}</span>
+      </div>
+      <div id="colPending">
+        {% if board.pending %}
+          {% for t in board.pending %}
+          <div class="ticket-card {% if t.is_overdue %}overdue{% endif %}"
+               data-ticket="{{ t.id }}"
+               data-priority="{{ t.priority }}"
+               data-overdue="{{ t.is_overdue|yesno:'1,0' }}"
+               onclick="openTicket(this)">
+            <div class="ticket-top">
+              <span class="ticket-title">{{ t.garment }}</span>
+              <span class="priority-dot p-{{ t.priority }}" title="{{ t.priority }}"></span>
+            </div>
+            <div class="ticket-meta">
+              <span>👤 {{ t.customer }}</span>
+              <span>🗂 #{{ t.order_id }}</span>
+            </div>
+            {% if t.color %}
+            <div class="ticket-meta"><span>🎨 {{ t.color }}</span></div>
+            {% endif %}
+            <div class="ticket-footer">
+              <span class="ticket-stage">{{ t.current_stage }}</span>
+              <span class="ticket-deadline {% if t.is_overdue %}overdue{% elif t.deadline %}warn{% endif %}">
+                {% if t.is_overdue %}⚠ Overdue{% elif t.deadline %}{{ t.deadline }}{% else %}No deadline{% endif %}
+              </span>
+            </div>
+            {% if t.assigned_to != "Unassigned" %}
+            <div style="margin-top:.35rem;"><span class="assigned-tag">👷 {{ t.assigned_to }}</span></div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-col">No pending tickets</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- In Progress column -->
+    <div class="col col-progress">
+      <div class="col-header">
+        <span class="col-title">⚙ In Progress</span>
+        <span class="col-count" id="progressCount">{{ in_progress_count }}</span>
+      </div>
+      <div id="colProgress">
+        {% if board.in_progress %}
+          {% for t in board.in_progress %}
+          <div class="ticket-card {% if t.is_overdue %}overdue{% endif %}"
+               data-ticket="{{ t.id }}"
+               data-priority="{{ t.priority }}"
+               data-overdue="{{ t.is_overdue|yesno:'1,0' }}"
+               onclick="openTicket(this)">
+            <div class="ticket-top">
+              <span class="ticket-title">{{ t.garment }}</span>
+              <span class="priority-dot p-{{ t.priority }}" title="{{ t.priority }}"></span>
+            </div>
+            <div class="ticket-meta">
+              <span>👤 {{ t.customer }}</span>
+              <span>🗂 #{{ t.order_id }}</span>
+            </div>
+            {% if t.color %}
+            <div class="ticket-meta"><span>🎨 {{ t.color }}</span></div>
+            {% endif %}
+            <div class="ticket-footer">
+              <span class="ticket-stage">{{ t.current_stage }}</span>
+              <span class="ticket-deadline {% if t.is_overdue %}overdue{% elif t.deadline %}warn{% endif %}">
+                {% if t.is_overdue %}⚠ Overdue{% elif t.deadline %}{{ t.deadline }}{% else %}No deadline{% endif %}
+              </span>
+            </div>
+            {% if t.assigned_to != "Unassigned" %}
+            <div style="margin-top:.35rem;"><span class="assigned-tag">👷 {{ t.assigned_to }}</span></div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-col">Nothing in progress</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Done column -->
+    <div class="col col-done">
+      <div class="col-header">
+        <span class="col-title">✅ Done</span>
+        <span class="col-count" id="doneCount">{{ done_count }}</span>
+      </div>
+      <div id="colDone">
+        {% if board.done %}
+          {% for t in board.done %}
+          <div class="ticket-card"
+               data-ticket="{{ t.id }}"
+               data-priority="{{ t.priority }}"
+               data-overdue="0"
+               onclick="openTicket(this)">
+            <div class="ticket-top">
+              <span class="ticket-title" style="text-decoration:line-through;color:var(--muted)">{{ t.garment }}</span>
+              <span class="priority-dot p-{{ t.priority }}" title="{{ t.priority }}"></span>
+            </div>
+            <div class="ticket-meta">
+              <span>👤 {{ t.customer }}</span>
+              <span>🗂 #{{ t.order_id }}</span>
+            </div>
+            <div class="ticket-footer">
+              <span class="ticket-stage">{{ t.current_stage }}</span>
+              <span style="font-size:.74rem;color:var(--success);font-weight:600">✓ Complete</span>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-col">No completed tickets yet</div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Quick-update modal -->
+<div class="modal-overlay hidden" id="ticketModal">
+  <div class="modal">
+    <h3 id="modalTitle">Update Ticket</h3>
+    <label>Status</label>
+    <select id="modalStatus">
+      <option value="pending">Pending</option>
+      <option value="in_progress">In Progress</option>
+      <option value="done">Done</option>
+    </select>
+    <label>Assign to Employee</label>
+    <select id="modalEmployee">
+      <option value="">— Keep current —</option>
+      {% for emp in employees %}
+      <option value="{{ emp.id }}">{{ emp.full_name }}{% if emp.role %} ({{ emp.role }}){% endif %}</option>
+      {% endfor %}
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <a id="modalEditLink" href="#" class="btn-cancel" style="text-decoration:none">Edit in Admin</a>
+      <button class="btn-save" onclick="saveTicket()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Priority filters
+const filterPills = Array.from(document.querySelectorAll("[data-priority], [data-show-overdue]"));
+let activePriority = "all";
+let showOverdueOnly = false;
+
+filterPills.forEach(pill => {
+  pill.addEventListener("click", () => {
+    filterPills.forEach(p => p.classList.remove("active"));
+    pill.classList.add("active");
+    if (pill.dataset.showOverdue) {
+      showOverdueOnly = !showOverdueOnly;
+      pill.classList.toggle("active", showOverdueOnly);
+    } else {
+      activePriority = pill.dataset.priority;
+      showOverdueOnly = false;
+      document.querySelector("[data-show-overdue]")?.classList.remove("active");
+    }
+    applyFilters();
+  });
+});
+
+function applyFilters() {
+  document.querySelectorAll(".ticket-card").forEach(card => {
+    const pMatch = activePriority === "all" || card.dataset.priority === activePriority;
+    const oMatch = !showOverdueOnly || card.dataset.overdue === "1";
+    card.style.display = pMatch && oMatch ? "" : "none";
+  });
+}
+
+// Modal
+let activeTicketId = null;
+
+function openTicket(card) {
+  activeTicketId = card.dataset.ticket;
+  document.getElementById("modalTitle").textContent = `Ticket #${activeTicketId} — ${card.querySelector(".ticket-title").textContent.trim()}`;
+  document.getElementById("modalEditLink").href = `/admin/shop/workticket/${activeTicketId}/change/`;
+  document.getElementById("ticketModal").classList.remove("hidden");
+}
+
+function closeModal() {
+  document.getElementById("ticketModal").classList.add("hidden");
+  activeTicketId = null;
+}
+
+function saveTicket() {
+  const status = document.getElementById("modalStatus").value;
+  const empId = document.getElementById("modalEmployee").value;
+  fetch(`/shop/api/ticket/${activeTicketId}/status/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-CSRFToken": getCookie("csrftoken") },
+    body: JSON.stringify({ status, assigned_to_id: empId || null }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) { closeModal(); location.reload(); }
+      else alert("Error saving: " + (data.error || "unknown"));
+    });
+}
+
+function getCookie(name) {
+  const v = document.cookie.match(`(^|;)\\s*${name}\\s*=\\s*([^;]+)`);
+  return v ? v.pop() : "";
+}
+
+document.getElementById("ticketModal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+</script>
+</body>
+</html>
