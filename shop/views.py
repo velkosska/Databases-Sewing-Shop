@@ -1,5 +1,6 @@
 import json
 from decimal import Decimal
+from types import SimpleNamespace
 
 from django.contrib import messages
 from django.db import transaction
@@ -7,7 +8,12 @@ from django.db.models import Count, Q, Sum
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext as _, ngettext
 
+from .measurement_prefill import (
+    get_customer_wizard_measurement_prefill,
+    measurement_prefill_json_for_django,
+)
 from .models import (
     Catalogue,
     CatalogueItem,
@@ -18,6 +24,7 @@ from .models import (
     Order,
     OrderItem,
     OrderItemMeasurement,
+    OrderPayment,
     WorkTicket,
 )
 
@@ -83,9 +90,9 @@ def dashboard(request):
     for order in orders:
         first_item = order.items.first()
         ticket = getattr(first_item, "ticket", None) if first_item else None
-        assigned_to = ticket.assigned_to.full_name if ticket and ticket.assigned_to else "Unassigned"
+        assigned_to = ticket.assigned_to.full_name if ticket and ticket.assigned_to else _("Unassigned")
         priority = ticket.priority if ticket else "normal"
-        garment = first_item.garment_type if first_item and first_item.garment_type else "N/A"
+        garment = first_item.garment_type if first_item and first_item.garment_type else _("N/A")
         due_in_days = None
         overdue_days = None
         if order.due_date:
@@ -158,7 +165,7 @@ def create_order(request):
             address = request.POST.get("new_address", "").strip()
             customer_notes = request.POST.get("new_customer_notes", "").strip()
             if not first_name or not last_name:
-                messages.error(request, "First and last name are required for a new customer.")
+                messages.error(request, _("First and last name are required for a new customer."))
                 return redirect("create_order_shop")
             customer = Customer.objects.create(
                 first_name=first_name,
@@ -193,13 +200,13 @@ def create_order(request):
             return HttpResponseBadRequest("Invalid payload.")
 
         if not customer or not items_payload:
-            messages.error(request, "Select a customer and add at least one item.")
+            messages.error(request, _("Select a customer and add at least one item."))
             return redirect("create_order_shop")
 
         with transaction.atomic():
             summary_lines = [
-                f"Deposit method: {deposit_method or 'N/A'}",
-                f"Deposit paid: {deposit_amount:.2f}",
+                _("Deposit method: %(method)s") % {"method": deposit_method or _("N/A")},
+                _("Deposit paid: %(amount)s") % {"amount": f"{deposit_amount:.2f}"},
             ]
             merged_notes = "\n".join(filter(None, [order_notes, internal_notes, *summary_lines]))
 
@@ -283,15 +290,45 @@ def create_order(request):
             order.total_price = subtotal
             order.save(update_fields=["total_price"])
 
+            if deposit_amount > 0:
+                method_map = {
+                    "cash": OrderPayment.Method.CASH,
+                    "card": OrderPayment.Method.CARD,
+                    "transfer": OrderPayment.Method.TRANSFER,
+                }
+                dm = deposit_method.lower() if deposit_method else ""
+                pm = method_map.get(dm, OrderPayment.Method.OTHER)
+                OrderPayment.objects.create(
+                    order=order,
+                    amount=deposit_amount,
+                    method=pm,
+                    notes=_("Recorded at order intake."),
+                )
+
             if delivery_method == "home_delivery":
                 Delivery.objects.create(
                     order=order,
                     delivery_method=Delivery.Method.COURIER,
                     recipient_name=customer.full_name,
-                    comments=f"Address: {delivery_address}\nRequested date: {delivery_date}",
+                    comments=_("Address: %(addr)s\nRequested date: %(date)s") % {
+                        "addr": delivery_address,
+                        "date": delivery_date,
+                    },
                 )
 
-        messages.success(request, f"Order #{order.id} created — {len(items_payload)} item(s), total ${order.total_price:.2f}.")
+        item_count = len(items_payload)
+        messages.success(
+            request,
+            ngettext(
+                "Order #%(order_id)s created — %(count)d item, total $%(total)s.",
+                "Order #%(order_id)s created — %(count)d items, total $%(total)s.",
+                item_count,
+            ) % {
+                "order_id": order.id,
+                "count": item_count,
+                "total": f"{order.total_price:.2f}",
+            },
+        )
         return redirect(f"/admin/shop/order/{order.id}/change/")
 
     context = {
@@ -338,7 +375,7 @@ def production_board(request):
         item = ticket.order_item
         customer = item.order.customer
         stages = list(ticket.stages.all())
-        current_stage = stages[-1].get_stage_name_display() if stages else "Order Received"
+        current_stage = stages[-1].get_stage_name_display() if stages else _("Order Received")
         is_overdue = (
             ticket.deadline
             and (ticket.deadline - today).days < 0
@@ -348,14 +385,16 @@ def production_board(request):
             "id": ticket.pk,
             "order_id": item.order_id,
             "customer": customer.full_name,
-            "garment": item.garment_type or (item.catalogue_item.name if item.catalogue_item else "Item"),
+            "garment": item.garment_type or (item.catalogue_item.name if item.catalogue_item else _("Item")),
             "color": item.color or "",
-            "assigned_to": ticket.assigned_to.full_name if ticket.assigned_to else "Unassigned",
+            "assigned_to": ticket.assigned_to.full_name if ticket.assigned_to else _("Unassigned"),
+            "is_assigned": ticket.assigned_to is not None,
             "priority": ticket.priority,
             "deadline": ticket.deadline.isoformat() if ticket.deadline else "",
             "is_overdue": is_overdue,
             "current_stage": current_stage,
             "stage_count": len(stages),
+            "ticket_status": ticket.status,
         })
 
     employees = Employee.objects.order_by("first_name", "last_name")
@@ -380,11 +419,21 @@ def customer_detail(request, customer_id):
         .prefetch_related("items__catalogue_item", "items__ticket")
         .order_by("-order_date")
     )
-    latest_measurement = (
-        OrderItemMeasurement.objects.filter(customer=customer)
-        .order_by("-created_at")
-        .first()
-    )
+    mraw = get_customer_wizard_measurement_prefill(customer.pk)
+    latest_measurement = None
+    if mraw.get("from_order_date") and mraw.get("recorded_at"):
+        latest_measurement = SimpleNamespace(
+            bust=mraw["bust"],
+            waist=mraw["waist"],
+            hips=mraw["hips"],
+            shoulder=mraw["shoulder"],
+            sleeve=mraw["sleeve"],
+            length=mraw["length"],
+            inseam=mraw["inseam"],
+            neck=mraw["neck"],
+            notes=mraw["notes"],
+            created_at=mraw["recorded_at"],
+        )
     total_spent = orders.aggregate(total=Sum("total_price"))["total"] or Decimal("0.00")
 
     context = {
@@ -428,31 +477,8 @@ def catalogue_item_autofill(request, item_id):
 # ─── API: Customer measurements ──────────────────────────────────────────────
 
 def customer_measurements(request, customer_id):
-    measurement = (
-        OrderItemMeasurement.objects.filter(customer_id=customer_id)
-        .select_related("order_item__order")
-        .order_by("-created_at")
-        .first()
-    )
-    if not measurement:
-        return JsonResponse({
-            "bust": None, "waist": None, "hips": None,
-            "shoulder": None, "sleeve": None, "length": None,
-            "inseam": None, "neck": None, "notes": None,
-            "from_order_date": None,
-        })
-    return JsonResponse({
-        "bust": str(measurement.bust) if measurement.bust else None,
-        "waist": str(measurement.waist) if measurement.waist else None,
-        "hips": str(measurement.hips) if measurement.hips else None,
-        "shoulder": str(measurement.shoulder) if measurement.shoulder else None,
-        "sleeve": str(measurement.sleeve) if measurement.sleeve else None,
-        "length": str(measurement.length) if measurement.length else None,
-        "inseam": str(measurement.inseam) if measurement.inseam else None,
-        "neck": str(measurement.neck) if measurement.neck else None,
-        "notes": measurement.notes,
-        "from_order_date": measurement.order_item.order.order_date.isoformat(),
-    })
+    raw = get_customer_wizard_measurement_prefill(customer_id)
+    return JsonResponse(measurement_prefill_json_for_django(raw))
 
 
 # ─── API: Customer search ─────────────────────────────────────────────────────
@@ -516,11 +542,19 @@ def update_ticket_status(request, ticket_id):
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     new_status = data.get("status")
-    if new_status not in dict(WorkTicket.Status.choices):
-        return JsonResponse({"error": "Invalid status"}, status=400)
-    ticket.status = new_status
-    assigned_to_id = data.get("assigned_to_id")
-    if assigned_to_id:
-        ticket.assigned_to_id = assigned_to_id
+    if new_status is not None and new_status != "":
+        if new_status not in dict(WorkTicket.Status.choices):
+            return JsonResponse({"error": _("Invalid status")}, status=400)
+        ticket.status = new_status
+    if "assigned_to_id" in data:
+        tid = data.get("assigned_to_id")
+        if tid in (None, "", False):
+            ticket.assigned_to_id = None
+        else:
+            try:
+                tid_int = int(tid)
+            except (TypeError, ValueError):
+                return JsonResponse({"error": _("Invalid assignee")}, status=400)
+            ticket.assigned_to_id = tid_int if tid_int else None
     ticket.save()
     return JsonResponse({"ok": True, "status": ticket.status})

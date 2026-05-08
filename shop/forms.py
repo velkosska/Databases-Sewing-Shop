@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from .models import CatalogueItem, Customer, Delivery, Order, OrderItem
 
@@ -13,12 +14,15 @@ class OrderAdminForm(forms.ModelForm):
         self.fields["customer"].queryset = self.fields["customer"].queryset.order_by(
             "first_name", "last_name"
         )
-        self.fields["total_price"].help_text = (
-            "Auto-calculated from order items. You can override if needed."
-        )
-        self.fields["deposit_paid"].help_text = (
-            "Amount paid by the customer at the time of order intake."
-        )
+        if "total_price" in self.fields:
+            self.fields["total_price"].help_text = (
+                "Auto-calculated from order items. You can override if needed."
+            )
+        if "deposit_paid" in self.fields:
+            self.fields["deposit_paid"].help_text = _(
+                "When payment rows exist under Payment history on this page, totals are summed from payments "
+                "and deposit / payment status become read-only."
+            )
 
 
 class OrderItemInlineForm(forms.ModelForm):

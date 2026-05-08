@@ -11,9 +11,11 @@ from django.db.models import Count, Q, Sum
 from django.db.models.functions import ExtractMonth
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from .measurement_prefill import get_customer_wizard_measurement_prefill
 from .models import (
     Catalogue,
     CatalogueItem,
@@ -24,6 +26,7 @@ from .models import (
     Order,
     OrderItem,
     OrderItemMeasurement,
+    OrderPayment,
     WorkTicket,
 )
 
@@ -354,6 +357,21 @@ def api_create_order(request):
         order.total_price = subtotal
         order.save(update_fields=["total_price"])
 
+        if deposit_amount > 0:
+            method_map = {
+                "cash": OrderPayment.Method.CASH,
+                "card": OrderPayment.Method.CARD,
+                "transfer": OrderPayment.Method.TRANSFER,
+            }
+            dm = (deposit_method or "").lower()
+            pm = method_map.get(dm, OrderPayment.Method.OTHER)
+            OrderPayment.objects.create(
+                order=order,
+                amount=deposit_amount,
+                method=pm,
+                notes=_("Recorded at order intake."),
+            )
+
         if delivery_method == "home_delivery":
             Delivery.objects.create(
                 order=order,
@@ -423,23 +441,21 @@ def api_customer_detail(request, customer_id):
             "items": items,
         })
 
-    latest_meas = (
-        OrderItemMeasurement.objects.filter(customer=customer)
-        .order_by("-created_at").first()
-    )
+    mraw = get_customer_wizard_measurement_prefill(customer.id)
     measurements = None
-    if latest_meas:
+    if mraw.get("from_order_date"):
         measurements = {
-            "bust": _decimal(latest_meas.bust),
-            "waist": _decimal(latest_meas.waist),
-            "hips": _decimal(latest_meas.hips),
-            "shoulder": _decimal(latest_meas.shoulder),
-            "sleeve": _decimal(latest_meas.sleeve),
-            "length": _decimal(latest_meas.length),
-            "inseam": _decimal(latest_meas.inseam),
-            "neck": _decimal(latest_meas.neck),
-            "notes": latest_meas.notes,
-            "recorded_at": latest_meas.created_at.isoformat(),
+            "bust": _decimal(mraw["bust"]),
+            "waist": _decimal(mraw["waist"]),
+            "hips": _decimal(mraw["hips"]),
+            "shoulder": _decimal(mraw["shoulder"]),
+            "sleeve": _decimal(mraw["sleeve"]),
+            "length": _decimal(mraw["length"]),
+            "inseam": _decimal(mraw["inseam"]),
+            "neck": _decimal(mraw["neck"]),
+            "notes": mraw["notes"],
+            "recorded_at": mraw["recorded_at"].isoformat() if mraw.get("recorded_at") else None,
+            "source": mraw["prefill_source"],
         }
 
     return JsonResponse({
@@ -459,25 +475,26 @@ def api_customer_detail(request, customer_id):
 
 
 def api_customer_measurements(request, customer_id):
-    meas = (
-        OrderItemMeasurement.objects.filter(customer_id=customer_id)
-        .select_related("order_item__order")
-        .order_by("-created_at")
-        .first()
-    )
-    if not meas:
-        return JsonResponse({k: None for k in ["bust","waist","hips","shoulder","sleeve","length","inseam","neck","notes","from_order_date"]})
+    raw = get_customer_wizard_measurement_prefill(customer_id)
+    if not raw.get("from_order_date"):
+        return JsonResponse({
+            k: None for k in [
+                "bust", "waist", "hips", "shoulder", "sleeve", "length",
+                "inseam", "neck", "notes", "from_order_date", "prefill_source",
+            ]
+        })
     return JsonResponse({
-        "bust": _decimal(meas.bust),
-        "waist": _decimal(meas.waist),
-        "hips": _decimal(meas.hips),
-        "shoulder": _decimal(meas.shoulder),
-        "sleeve": _decimal(meas.sleeve),
-        "length": _decimal(meas.length),
-        "inseam": _decimal(meas.inseam),
-        "neck": _decimal(meas.neck),
-        "notes": meas.notes,
-        "from_order_date": meas.order_item.order.order_date.isoformat(),
+        "bust": _decimal(raw["bust"]),
+        "waist": _decimal(raw["waist"]),
+        "hips": _decimal(raw["hips"]),
+        "shoulder": _decimal(raw["shoulder"]),
+        "sleeve": _decimal(raw["sleeve"]),
+        "length": _decimal(raw["length"]),
+        "inseam": _decimal(raw["inseam"]),
+        "neck": _decimal(raw["neck"]),
+        "notes": raw["notes"],
+        "from_order_date": raw["from_order_date"],
+        "prefill_source": raw["prefill_source"],
     })
 
 
@@ -533,6 +550,30 @@ def api_materials(request):
     })
 
 
+# ── Deliveries (Next.js Deliveries screen) ─────────────────────────────────
+
+def api_deliveries(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    rows = []
+    for d in Delivery.objects.select_related("order", "order__customer").order_by("-id"):
+        order = d.order
+        cust = order.customer.full_name if order.customer_id else ""
+        method_label = d.get_delivery_method_display() if d.delivery_method else ""
+        rows.append({
+            "id": d.pk,
+            "order_id": order.pk,
+            "customer_name": cust,
+            "recipient_name": d.recipient_name or "",
+            "delivery_method": d.delivery_method,
+            "delivery_method_label": method_label,
+            "delivered": d.delivered,
+            "delivered_at": d.delivered_at.isoformat() if d.delivered_at else None,
+            "comments": (d.comments or "")[:280],
+        })
+    return JsonResponse({"deliveries": rows})
+
+
 # ── Production board ──────────────────────────────────────────────────────
 
 def api_production_board(request):
@@ -566,11 +607,14 @@ def api_production_board(request):
             "garment": item.garment_type or (item.catalogue_item.name.split("  —")[0] if item.catalogue_item else "Item"),
             "color": item.color or "",
             "assigned_to": ticket.assigned_to.full_name if ticket.assigned_to else None,
+            "assigned_employee_id": ticket.assigned_to_id,
             "priority": ticket.priority,
             "deadline": ticket.deadline.isoformat() if ticket.deadline else None,
             "is_overdue": is_overdue,
             "current_stage": current_stage,
             "stage_count": len(stages),
+            "ticket_status": ticket.status,
+            "notes": ticket.notes or "",
         })
 
     employees = [
@@ -595,12 +639,19 @@ def api_ticket_status(request, ticket_id):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     new_status = data.get("status")
-    if new_status and new_status not in dict(WorkTicket.Status.choices):
-        return JsonResponse({"error": "Invalid status"}, status=400)
-    if new_status:
+    if new_status is not None and new_status != "":
+        if new_status not in dict(WorkTicket.Status.choices):
+            return JsonResponse({"error": "Invalid status"}, status=400)
         ticket.status = new_status
-    assigned_to_id = data.get("assigned_to_id")
-    if assigned_to_id:
-        ticket.assigned_to_id = assigned_to_id
+    if "assigned_to_id" in data:
+        tid = data.get("assigned_to_id")
+        if tid in (None, "", False):
+            ticket.assigned_to_id = None
+        else:
+            try:
+                tid_int = int(tid)
+            except (TypeError, ValueError):
+                return JsonResponse({"error": "Invalid assigned_to_id"}, status=400)
+            ticket.assigned_to_id = tid_int if tid_int else None
     ticket.save()
     return JsonResponse({"ok": True, "status": ticket.status})

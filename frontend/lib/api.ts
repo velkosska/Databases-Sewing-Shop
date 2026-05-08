@@ -140,6 +140,22 @@ export interface BoardData {
   employees: Employee[];
 }
 
+export interface DeliveryRow {
+  id: number;
+  order_id: number;
+  customer_name: string;
+  recipient_name: string;
+  delivery_method: string | null;
+  delivery_method_label: string;
+  delivered: boolean;
+  delivered_at: string | null;
+  comments: string;
+}
+
+export interface DeliveriesData {
+  deliveries: DeliveryRow[];
+}
+
 export interface CustomerDetail {
   id: number; first_name: string; last_name: string; full_name: string;
   phone: string; email: string; address: string; notes: string;

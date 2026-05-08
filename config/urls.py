@@ -12,6 +12,7 @@ from shop.api_views import (
     api_customer_measurements,
     api_customers,
     api_dashboard,
+    api_deliveries,
     api_employees,
     api_materials,
     api_orders,
@@ -29,8 +30,13 @@ api_patterns = [
     path("customers/<int:customer_id>/measurements", api_customer_measurements, name="api_customer_measurements"),
     path("employees", api_employees, name="api_employees"),
     path("materials", api_materials, name="api_materials"),
-    path("production/board", api_production_board, name="api_production_board"),
-    path("tickets/<int:ticket_id>/status", api_ticket_status, name="api_ticket_status"),
+    path("deliveries", api_deliveries, name="api_deliveries_no_slash"),
+    path("deliveries/", api_deliveries, name="api_deliveries"),
+    # Next.js api normPath strips trailing slashes; accept both shapes
+    path("production/board", api_production_board, name="api_production_board_no_slash"),
+    path("production/board/", api_production_board, name="api_production_board"),
+    path("tickets/<int:ticket_id>/status", api_ticket_status, name="api_ticket_status_no_slash"),
+    path("tickets/<int:ticket_id>/status/", api_ticket_status, name="api_ticket_status"),
 ]
 
 def set_lang(request, lang_code):

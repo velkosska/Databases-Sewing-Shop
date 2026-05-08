@@ -74,7 +74,7 @@
         finalPriceInput.dataset.autofilled = "true";
         if (badge) { badge.className = "order-flow-chip autofilled"; badge.textContent = "✓ Price autofilled"; }
       }
-      refreshOrderTotalPreview();
+      scheduleRefreshOrderPreview();
     }
 
     catalogueSelect.addEventListener("change", function () { applyAutoFill(true); });
@@ -147,13 +147,21 @@
   }
 
   // ── Order total preview panel ─────────────────────────────────────────
+  let previewTimer = null;
+  function scheduleRefreshOrderPreview() {
+    window.clearTimeout(previewTimer);
+    previewTimer = window.setTimeout(refreshOrderTotalPreview, 80);
+  }
+
   function refreshOrderTotalPreview() {
     let total = 0;
     document.querySelectorAll(".dynamic-items, .form-row").forEach(function (row) {
       const deleteInput = row.querySelector('input[name$="-DELETE"]');
       if (deleteInput && deleteInput.checked) return;
-      const qty = parsePrice(row.querySelector('input[name$="-quantity"]')?.value || "1");
-      const price = parsePrice(row.querySelector('input[name$="-final_price"]')?.value || "0");
+      var qEl = row.querySelector('input[name$="-quantity"]');
+      var pEl = row.querySelector('input[name$="-final_price"]');
+      const qty = parsePrice(qEl ? qEl.value : "1");
+      const price = parsePrice(pEl ? pEl.value : "0");
       total += qty > 0 ? price : 0;
     });
 
@@ -168,9 +176,11 @@
 
   // ── Smart Order Flow panel ────────────────────────────────────────────
   function buildOrderPanel() {
+    try {
     const customerInput = document.getElementById("id_customer");
     const firstFieldset = document.querySelector("fieldset.module, fieldset");
-    if (!customerInput || !firstFieldset || document.getElementById("order-flow-panel")) return;
+    var parentEl = firstFieldset && firstFieldset.parentNode;
+    if (!customerInput || !firstFieldset || !parentEl || document.getElementById("order-flow-panel")) return;
 
     const panel = document.createElement("div");
     panel.id = "order-flow-panel";
@@ -185,27 +195,39 @@
       "</div>",
       '<div id="order-flow-meta" style="margin-top:8px;font-size:12px;color:#475569;"></div>',
     ].join("");
-    firstFieldset.parentNode.insertBefore(panel, firstFieldset);
+    parentEl.insertBefore(panel, firstFieldset);
 
     function updateCustomerSnapshot() {
       const id = customerInput.value;
       if (!id) {
-        document.getElementById("order-flow-customer").textContent = "Not selected";
-        document.getElementById("order-flow-orders").textContent = "—";
-        document.getElementById("order-flow-phone").textContent = "—";
-        document.getElementById("order-flow-meta").textContent = "";
+        const elC = document.getElementById("order-flow-customer");
+        const elO = document.getElementById("order-flow-orders");
+        const elP = document.getElementById("order-flow-phone");
+        const elM = document.getElementById("order-flow-meta");
+        if (elC) elC.textContent = "Not selected";
+        if (elO) elO.textContent = "—";
+        if (elP) elP.textContent = "—";
+        if (elM) elM.textContent = "";
         return;
       }
-      fetch("/shop/api/customer/" + id + "/snapshot/")
+      fetch("/shop/api/customer/" + encodeURIComponent(id) + "/snapshot/")
         .then(r => r.ok ? r.json() : null)
         .then(data => {
+          const nameEl = document.getElementById("order-flow-customer");
+          if (!nameEl) return;
           if (!data) return;
-          document.getElementById("order-flow-customer").textContent = data.name;
-          document.getElementById("order-flow-orders").textContent = data.orders_count || "0";
-          document.getElementById("order-flow-phone").textContent = data.phone || "—";
-          const meta = [data.email, data.address].filter(Boolean).join(" | ");
-          document.getElementById("order-flow-meta").textContent = meta || "";
-        });
+          nameEl.textContent = data.name;
+          const ordersEl = document.getElementById("order-flow-orders");
+          if (ordersEl) ordersEl.textContent = data.orders_count || "0";
+          const phoneEl = document.getElementById("order-flow-phone");
+          if (phoneEl) phoneEl.textContent = data.phone || "—";
+          const meta = document.getElementById("order-flow-meta");
+          if (meta) {
+            const parts = [data.email, data.address].filter(Boolean).join(" | ");
+            meta.textContent = parts || "";
+          }
+        })
+        .catch(function () {});
     }
 
     customerInput.addEventListener("change", updateCustomerSnapshot);
@@ -216,37 +238,43 @@
       totalInput.addEventListener("input", function () { totalInput.dataset.autofilled = "false"; });
     }
     refreshOrderTotalPreview();
+    } catch (err) {
+      if (window.console && console.error) console.error("[order_flow] buildOrderPanel:", err);
+    }
+  }
+
+  function safeMatches(el, selector) {
+    return el && el.matches && typeof el.matches === "function" && el.matches(selector);
   }
 
   // ── Init ─────────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", function () {
+    try {
     buildOrderPanel();
     bindRows();
     bindStandaloneOrderItemForm();
     refreshOrderTotalPreview();
 
     // Bind new inline rows added via "Add another…"
-    document.querySelector(".add-row a")?.addEventListener("click", function () {
-      window.setTimeout(function () { bindRows(); refreshOrderTotalPreview(); }, 80);
+    document.querySelectorAll(".add-row a").forEach(function (lnk) {
+      lnk.addEventListener("click", function () {
+        window.setTimeout(function () { bindRows(); scheduleRefreshOrderPreview(); }, 80);
+      });
     });
 
-    // MutationObserver fallback for dynamically added rows
-    if (document.body) {
-      new MutationObserver(function () {
-        bindRows();
-        bindStandaloneOrderItemForm();
-        refreshOrderTotalPreview();
-      }).observe(document.body, { childList: true, subtree: true });
-    }
-
-    document.body.addEventListener("input", function (e) {
+    var bd = document.body;
+    if (bd) bd.addEventListener("input", function (e) {
+      var el = e.target;
       if (
-        e.target.matches('input[name$="-final_price"]') ||
-        e.target.matches('input[name$="-quantity"]') ||
-        e.target.matches('input[name="total_price"]')
+        safeMatches(el, 'input[name$="-final_price"]') ||
+        safeMatches(el, 'input[name$="-quantity"]') ||
+        safeMatches(el, 'input[name="total_price"]')
       ) {
-        refreshOrderTotalPreview();
+        scheduleRefreshOrderPreview();
       }
     });
+    } catch (err) {
+      if (window.console && console.error) console.error("[order_flow] init:", err);
+    }
   });
 })();

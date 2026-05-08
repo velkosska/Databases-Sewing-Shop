@@ -9,8 +9,16 @@ from django.test import TestCase, Client
 from django.utils import timezone
 
 from .models import (
-    CatalogueItem, Customer, Delivery, Employee,
-    Material, Order, OrderItem, WorkTicket,
+    CatalogueItem,
+    Customer,
+    Delivery,
+    Employee,
+    Material,
+    Order,
+    OrderItem,
+    OrderPayment,
+    OrderProductionLog,
+    WorkTicket,
 )
 
 
@@ -49,6 +57,12 @@ class BaseTestCase(TestCase):
             total_price=Decimal("350.00"),
             deposit_paid=Decimal("100.00"),
             payment_status=Order.PaymentStatus.DEPOSIT,
+        )
+        OrderPayment.objects.create(
+            order=self.order,
+            amount=Decimal("100.00"),
+            method=OrderPayment.Method.CASH,
+            notes="Opening deposit",
         )
         self.order_item = OrderItem.objects.create(
             order=self.order,
@@ -177,6 +191,9 @@ class CreateOrderAPITest(BaseTestCase):
         self.assertTrue(data["ok"])
         self.assertIn("order_id", data)
         self.assertEqual(data["customer_name"], "Ana García")
+        ord_x = Order.objects.get(pk=data["order_id"])
+        self.assertEqual(ord_x.payments.count(), 1)
+        self.assertEqual(ord_x.payments.first().amount, Decimal("100"))
 
     def test_create_with_new_customer(self):
         payload = {
@@ -228,6 +245,8 @@ class CreateOrderAPITest(BaseTestCase):
         order_id = _json(r)["order_id"]
         order = Order.objects.get(pk=order_id)
         self.assertEqual(order.payment_status, Order.PaymentStatus.DEPOSIT)
+        self.assertEqual(order.payments.count(), 1)
+        self.assertEqual(order.payments.first().amount, Decimal("50"))
 
     def test_no_deposit_unpaid_status(self):
         r = self._post({
@@ -238,6 +257,7 @@ class CreateOrderAPITest(BaseTestCase):
         order_id = _json(r)["order_id"]
         order = Order.objects.get(pk=order_id)
         self.assertEqual(order.payment_status, Order.PaymentStatus.UNPAID)
+        self.assertEqual(order.payments.count(), 0)
 
     def test_home_delivery_creates_delivery_record(self):
         r = self._post({
@@ -346,18 +366,18 @@ class MaterialsAPITest(BaseTestCase):
 class ProductionBoardAPITest(BaseTestCase):
 
     def test_board_200(self):
-        r = self.client.get("/api/production/board")
+        r = self.client.get("/api/production/board/")
         self.assertEqual(r.status_code, 200)
 
     def test_board_structure(self):
-        data = _json(self.client.get("/api/production/board"))
+        data = _json(self.client.get("/api/production/board/"))
         self.assertIn("board", data)
         self.assertIn("employees", data)
         for col in ("pending", "in_progress", "done"):
             self.assertIn(col, data["board"])
 
     def test_ticket_in_pending_column(self):
-        data = _json(self.client.get("/api/production/board"))
+        data = _json(self.client.get("/api/production/board/"))
         self.assertEqual(len(data["board"]["pending"]), 1)
         self.assertEqual(data["board"]["pending"][0]["customer"], "Ana García")
 
@@ -368,17 +388,27 @@ class TicketStatusAPITest(BaseTestCase):
 
     def test_update_status(self):
         r = self.client.post(
-            f"/api/tickets/{self.ticket.pk}/status",
+            f"/api/tickets/{self.ticket.pk}/status/",
             data=json.dumps({"status": "in_progress"}),
             content_type="application/json",
         )
         self.assertEqual(r.status_code, 200)
         self.ticket.refresh_from_db()
         self.assertEqual(self.ticket.status, "in_progress")
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, Order.Status.IN_PRODUCTION)
+        self.order_item.refresh_from_db()
+        self.assertEqual(self.order_item.status, "in_production")
+
+        logs = OrderProductionLog.objects.filter(order=self.order).order_by("pk")
+        kinds = set(logs.values_list("kind", flat=True))
+        self.assertIn(OrderProductionLog.Kind.TICKET_STATUS, kinds)
+        self.assertIn(OrderProductionLog.Kind.ORDER_ITEM_STATUS, kinds)
+        self.assertIn(OrderProductionLog.Kind.ORDER_STATUS, kinds)
 
     def test_invalid_status_400(self):
         r = self.client.post(
-            f"/api/tickets/{self.ticket.pk}/status",
+            f"/api/tickets/{self.ticket.pk}/status/",
             data=json.dumps({"status": "flying"}),
             content_type="application/json",
         )
@@ -386,11 +416,70 @@ class TicketStatusAPITest(BaseTestCase):
 
     def test_not_found_404(self):
         r = self.client.post(
-            "/api/tickets/999999/status",
+            "/api/tickets/999999/status/",
             data=json.dumps({"status": "done"}),
             content_type="application/json",
         )
         self.assertEqual(r.status_code, 404)
+
+    def test_all_items_done_sets_order_completed(self):
+        """Workflow 3: when every ticket is done the order aggregates to Completed."""
+        oi2 = OrderItem.objects.create(
+            order=self.order,
+            catalogue_item=self.catalogue_item,
+            garment_type="Second garment",
+            unit_price=Decimal("100"),
+            final_price=Decimal("100"),
+            quantity=1,
+            status="pending",
+        )
+        t2 = WorkTicket.objects.create(
+            order_item=oi2,
+            status=WorkTicket.Status.PENDING,
+            priority=WorkTicket.Priority.NORMAL,
+        )
+        ep = lambda tid: f"/api/tickets/{tid}/status/"
+        self.client.post(
+            ep(self.ticket.pk),
+            data=json.dumps({"status": "done"}),
+            content_type="application/json",
+        )
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, Order.Status.IN_PRODUCTION)
+
+        self.client.post(
+            ep(t2.pk),
+            data=json.dumps({"status": "done"}),
+            content_type="application/json",
+        )
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, Order.Status.COMPLETED)
+        self.order_item.refresh_from_db()
+        oi2.refresh_from_db()
+        self.assertEqual(self.order_item.status, "completed")
+        self.assertEqual(oi2.status, "completed")
+
+
+# ── Deliveries API ─────────────────────────────────────────────────────────────
+
+class DeliveriesAPITest(BaseTestCase):
+
+    def test_list_200(self):
+        r = self.client.get("/api/deliveries/")
+        self.assertEqual(r.status_code, 200)
+        data = _json(r)
+        self.assertIn("deliveries", data)
+        self.assertEqual(data["deliveries"], [])
+
+    def test_includes_delivery_row(self):
+        Delivery.objects.create(
+            order=self.order,
+            delivery_method=Delivery.Method.PICKUP,
+            recipient_name=self.customer.full_name,
+        )
+        data = _json(self.client.get("/api/deliveries"))
+        self.assertEqual(len(data["deliveries"]), 1)
+        self.assertEqual(data["deliveries"][0]["order_id"], self.order.pk)
 
 
 # ── Language Switcher ─────────────────────────────────────────────────────────

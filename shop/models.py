@@ -146,6 +146,32 @@ class Order(models.Model):
         return f"Order #{self.pk} - {self.customer.full_name}"
 
 
+class OrderPayment(models.Model):
+    """Individual payment recording for orders (ledger-style history)."""
+
+    class Method(models.TextChoices):
+        CASH = "cash", _("Cash")
+        CARD = "card", _("Card")
+        TRANSFER = "transfer", _("Bank transfer")
+        OTHER = "other", _("Other")
+        ADMIN_MARK_DELIVERED = "admin_mark_delivered", _("Marked delivered (admin)")
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="payments")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    method = models.CharField(max_length=32, choices=Method.choices, default=Method.CASH)
+    recorded_at = models.DateTimeField(default=timezone.now, db_index=True)
+    notes = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        db_table = "order_payment"
+        ordering = ["-recorded_at"]
+        verbose_name = _("Payment")
+        verbose_name_plural = _("Payments")
+
+    def __str__(self):
+        return f"${self.amount} on order #{self.order_id}"
+
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     catalogue = models.ForeignKey(Catalogue, on_delete=models.PROTECT, related_name="order_items", blank=True, null=True)
@@ -323,6 +349,33 @@ class Delivery(models.Model):
     def __str__(self):
         delivered_status = _("Delivered") if self.delivered else _("Pending")
         return f"Delivery for Order #{self.order.pk} - {delivered_status}"
+
+
+class OrderProductionLog(models.Model):
+    class Kind(models.TextChoices):
+        ORDER_STATUS = "order_status", _("Order status")
+        PAYMENT_STATUS = "payment_status", _("Payment status")
+        ORDER_ITEM_STATUS = "order_item_status", _("Line item status")
+        ORDER_ITEM_ASSIGNED = "order_item_assigned", _("Line item assignment")
+        TICKET_STATUS = "ticket_status", _("Work ticket status")
+        TICKET_ASSIGNED = "ticket_assigned", _("Work ticket assignment")
+        STAGE_STARTED = "stage_started", _("Stage started")
+        STAGE_COMPLETED = "stage_completed", _("Stage finished")
+        DELIVERY = "delivery", _("Delivery")
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="production_logs")
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+    kind = models.CharField(max_length=32, choices=Kind.choices)
+    payload = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        db_table = "order_production_log"
+        ordering = ["-created_at"]
+        verbose_name = _("Production log")
+        verbose_name_plural = _("Production logs")
+
+    def __str__(self):
+        return f"{self.order_id} {self.kind} @ {self.created_at}"
 
 
 class OrderItemMaterial(models.Model):

@@ -171,6 +171,7 @@ UNFOLD = {
                     {"title": _("Customers"),   "icon": "person",       "link": "/admin/shop/customer/"},
                     {"title": _("Orders"),      "icon": "receipt_long", "link": "/admin/shop/order/"},
                     {"title": _("Order Items"), "icon": "checkroom",    "link": "/admin/shop/orderitem/"},
+                    {"title": _("Payments"),       "icon": "payments",   "link": "/admin/shop/orderpayment/"},
                 ],
             },
             {
@@ -178,6 +179,7 @@ UNFOLD = {
                 "items": [
                     {"title": _("Work Tickets"),       "icon": "assignment",      "link": "/admin/shop/workticket/"},
                     {"title": _("Production Stages"),  "icon": "timeline",        "link": "/admin/shop/productionstage/"},
+                    {"title": _("Production Logs"),   "icon": "history",         "link": "/admin/shop/orderproductionlog/"},
                     {"title": _("Measurements"),       "icon": "straighten",      "link": "/admin/shop/measurement/"},
                 ],
             },

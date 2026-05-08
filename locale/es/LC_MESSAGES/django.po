@@ -1,15 +1,21 @@
-# Spanish translations for Sewing Shop admin
+# Spanish translations for Sewing Shop
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-# ── App name (breadcrumb) ──────────────────────────────────────────────────
+# ============================================================
+#  App / sidebar / navigation
+# ============================================================
+
 msgid "Shop"
 msgstr "Tienda"
 
-# ── Sidebar section titles ─────────────────────────────────────────────────
+msgid "Sewing Shop"
+msgstr "Taller de Costura"
+
 msgid "Customers & Orders"
 msgstr "Clientes y Pedidos"
 
@@ -19,7 +25,6 @@ msgstr "Producción"
 msgid "Resources"
 msgstr "Recursos"
 
-# ── Sidebar item titles ────────────────────────────────────────────────────
 msgid "Customers"
 msgstr "Clientes"
 
@@ -35,6 +40,9 @@ msgstr "Órdenes de Trabajo"
 msgid "Production Stages"
 msgstr "Etapas de Producción"
 
+msgid "Production Logs"
+msgstr "Registros de producción"
+
 msgid "Measurements"
 msgstr "Medidas"
 
@@ -47,9 +55,18 @@ msgstr "Materiales"
 msgid "Deliveries"
 msgstr "Entregas"
 
-# ── Model verbose names ────────────────────────────────────────────────────
+msgid "Payments"
+msgstr "Pagos"
+
+# ============================================================
+#  Model verbose names
+# ============================================================
+
 msgid "Customer"
 msgstr "Cliente"
+
+msgid "Customer:"
+msgstr "Cliente:"
 
 msgid "Employee"
 msgstr "Empleado"
@@ -90,20 +107,29 @@ msgstr "Etapa de Producción"
 msgid "Delivery"
 msgstr "Entrega"
 
+msgid "Payment"
+msgstr "Pago"
+
 msgid "Order Item Material"
 msgstr "Material del Artículo"
 
 msgid "Order Item Materials"
 msgstr "Materiales del Artículo"
 
-# ── Model help texts ───────────────────────────────────────────────────────
+# ============================================================
+#  Help texts
+# ============================================================
+
 msgid "Alert when stock drops below this quantity."
 msgstr "Alertar cuando el stock baje de esta cantidad."
 
 msgid "Amount paid as deposit at time of order."
 msgstr "Cantidad pagada como depósito al realizar el pedido."
 
-# ── Order status choices ───────────────────────────────────────────────────
+# ============================================================
+#  Status / payment / priority / stage / method choices
+# ============================================================
+
 msgid "Pending"
 msgstr "Pendiente"
 
@@ -113,12 +139,17 @@ msgstr "En Producción"
 msgid "Completed"
 msgstr "Completado"
 
+msgid "Complete"
+msgstr "Completo"
+
 msgid "Delivered"
 msgstr "Entregado"
 
-# ── Payment status choices ─────────────────────────────────────────────────
 msgid "Unpaid"
 msgstr "Sin pagar"
+
+msgid "Deposit"
+msgstr "Depósito"
 
 msgid "Deposit Paid"
 msgstr "Depósito Pagado"
@@ -126,14 +157,42 @@ msgstr "Depósito Pagado"
 msgid "Fully Paid"
 msgstr "Totalmente Pagado"
 
-# ── Work ticket status choices ─────────────────────────────────────────────
+msgid "Balance due"
+msgstr "Saldo pendiente"
+
+msgid "Has balance owed"
+msgstr "Con saldo pendiente"
+
+msgid "Outstanding (not delivered)"
+msgstr "Saldo abierto (sin entregar)"
+
+msgid "Paid up"
+msgstr "Liquidado"
+
+msgid "owed"
+msgstr "pendiente"
+
+msgid "Payment history"
+msgstr "Historial de pagos"
+
+msgid "Remaining on order"
+msgstr "Restante en el pedido"
+
+msgid "Captured on mark delivered (admin)"
+msgstr "Registrado al marcar entregado (admin)"
+
+msgid "Recorded at order intake."
+msgstr "Registrado al crear el pedido."
+
+msgid "Paid"
+msgstr "Pagado"
+
 msgid "In Progress"
 msgstr "En Progreso"
 
 msgid "Done"
 msgstr "Terminado"
 
-# ── Work ticket priority choices ───────────────────────────────────────────
 msgid "Low"
 msgstr "Baja"
 
@@ -146,7 +205,6 @@ msgstr "Alta"
 msgid "Urgent"
 msgstr "Urgente"
 
-# ── Production stage choices ───────────────────────────────────────────────
 msgid "Order Received"
 msgstr "Pedido Recibido"
 
@@ -168,7 +226,6 @@ msgstr "Control de Calidad"
 msgid "Ready for Delivery"
 msgstr "Listo para Entrega"
 
-# ── Delivery method choices ────────────────────────────────────────────────
 msgid "Pickup"
 msgstr "Recogida"
 
@@ -178,27 +235,39 @@ msgstr "Mensajería"
 msgid "In Store"
 msgstr "En Tienda"
 
-# ── Admin column headers (descriptions) ───────────────────────────────────
+# ============================================================
+#  Admin column headers and fieldsets
+# ============================================================
+
 msgid "Order #"
 msgstr "Pedido #"
 
 msgid "Items"
 msgstr "Artículos"
 
+msgid "Item"
+msgstr "Artículo"
+
+msgid "Garment"
+msgstr "Prenda"
+
 msgid "Order date"
 msgstr "Fecha del pedido"
 
+msgid "Due date"
+msgstr "Fecha de entrega"
+
 msgid "Due Date"
-msgstr "Fecha límite"
+msgstr "Fecha de entrega"
 
 msgid "Status"
 msgstr "Estado"
 
-msgid "Payment"
-msgstr "Pago"
-
 msgid "Total"
 msgstr "Total"
+
+msgid "Actions"
+msgstr "Acciones"
 
 msgid "Active Tickets"
 msgstr "Tickets Activos"
@@ -212,9 +281,6 @@ msgstr "Tipos de Prenda"
 msgid "Ticket"
 msgstr "Ticket"
 
-msgid "Garment"
-msgstr "Prenda"
-
 msgid "Priority"
 msgstr "Prioridad"
 
@@ -224,7 +290,13 @@ msgstr "Fecha límite"
 msgid "Delivered?"
 msgstr "¿Entregado?"
 
-# ── Admin action descriptions ──────────────────────────────────────────────
+msgid "Assigned to"
+msgstr "Asignado a"
+
+# ============================================================
+#  Admin actions
+# ============================================================
+
 msgid "Mark selected orders as In Production"
 msgstr "Marcar pedidos seleccionados como En Producción"
 
@@ -240,26 +312,28 @@ msgstr "Marcar tickets seleccionados como En Progreso"
 msgid "Mark selected work tickets as Done"
 msgstr "Marcar tickets seleccionados como Terminados"
 
-# ── Action success messages ────────────────────────────────────────────────
+#, python-format
 msgid "%(count)d order marked as In Production."
-msgstr "%(count)d pedido marcado como En Producción."
+msgid_plural "%(count)d orders marked as In Production."
+msgstr[0] "%(count)d pedido marcado como En Producción."
+msgstr[1] "%(count)d pedidos marcados como En Producción."
 
-msgid "%(count)d orders marked as In Production."
-msgstr "%(count)d pedidos marcados como En Producción."
-
+#, python-format
 msgid "%(count)d order marked as Completed."
-msgstr "%(count)d pedido marcado como Completado."
+msgid_plural "%(count)d orders marked as Completed."
+msgstr[0] "%(count)d pedido marcado como Completado."
+msgstr[1] "%(count)d pedidos marcados como Completados."
 
-msgid "%(count)d orders marked as Completed."
-msgstr "%(count)d pedidos marcados como Completados."
-
+#, python-format
 msgid "%(count)d order marked as Delivered."
-msgstr "%(count)d pedido marcado como Entregado."
+msgid_plural "%(count)d orders marked as Delivered."
+msgstr[0] "%(count)d pedido marcado como Entregado."
+msgstr[1] "%(count)d pedidos marcados como Entregados."
 
-msgid "%(count)d orders marked as Delivered."
-msgstr "%(count)d pedidos marcados como Entregados."
+# ============================================================
+#  Fieldset titles
+# ============================================================
 
-# ── Fieldset section titles ────────────────────────────────────────────────
 msgid "Contact Information"
 msgstr "Información de Contacto"
 
@@ -291,7 +365,9 @@ msgid "Pricing & Payment"
 msgstr "Precios y Pago"
 
 msgid "Total price auto-calculates from items. Deposit is recorded at intake."
-msgstr "El precio total se calcula automáticamente a partir de los artículos. El depósito se registra al recibir el pedido."
+msgstr ""
+"El precio total se calcula automáticamente a partir de los artículos. "
+"El depósito se registra al recibir el pedido."
 
 msgid "Item Details"
 msgstr "Detalles del Artículo"
@@ -311,7 +387,10 @@ msgstr "Detalles de Entrega"
 msgid "Comments"
 msgstr "Comentarios"
 
-# ── Inline verbose names ───────────────────────────────────────────────────
+# ============================================================
+#  Inline verbose names
+# ============================================================
+
 msgid "Material used"
 msgstr "Material usado"
 
@@ -324,21 +403,21 @@ msgstr "Artículo del pedido"
 msgid "Order items"
 msgstr "Artículos del pedido"
 
-# ── Custom UI strings in admin methods ─────────────────────────────────────
+# ============================================================
+#  Custom UI strings (admin / dashboard)
+# ============================================================
+
 msgid "No orders"
 msgstr "Sin pedidos"
 
+#, python-format
 msgid "%(n)d order"
-msgstr "%(n)d pedido"
-
-msgid "%(n)d orders"
-msgstr "%(n)d pedidos"
+msgid_plural "%(n)d orders"
+msgstr[0] "%(n)d pedido"
+msgstr[1] "%(n)d pedidos"
 
 msgid "No items"
 msgstr "Sin artículos"
-
-msgid "Item"
-msgstr "Artículo"
 
 msgid "more"
 msgstr "más"
@@ -360,3 +439,592 @@ msgstr "d restantes"
 
 msgid "units"
 msgstr "unidades"
+
+msgid "Unassigned"
+msgstr "Sin asignar"
+
+msgid "N/A"
+msgstr "N/D"
+
+# ============================================================
+#  Flash messages (views.py)
+# ============================================================
+
+msgid "First and last name are required for a new customer."
+msgstr "Se requieren nombre y apellido para un nuevo cliente."
+
+msgid "Select a customer and add at least one item."
+msgstr "Selecciona un cliente y añade al menos un artículo."
+
+#, python-format
+msgid "Deposit method: %(method)s"
+msgstr "Método de depósito: %(method)s"
+
+#, python-format
+msgid "Deposit paid: %(amount)s"
+msgstr "Depósito pagado: %(amount)s"
+
+#, python-format
+msgid ""
+"Address: %(addr)s\n"
+"Requested date: %(date)s"
+msgstr ""
+"Dirección: %(addr)s\n"
+"Fecha solicitada: %(date)s"
+
+#, python-format
+msgid "Order #%(order_id)s created — %(count)d item, total $%(total)s."
+msgid_plural "Order #%(order_id)s created — %(count)d items, total $%(total)s."
+msgstr[0] "Pedido #%(order_id)s creado — %(count)d artículo, total $%(total)s."
+msgstr[1] "Pedido #%(order_id)s creado — %(count)d artículos, total $%(total)s."
+
+# ============================================================
+#  Customer detail page
+# ============================================================
+
+msgid "Customer History"
+msgstr "Historial del Cliente"
+
+msgid "Dashboard"
+msgstr "Panel"
+
+msgid "Edit in Admin"
+msgstr "Editar en Admin"
+
+msgid "New Order"
+msgstr "Nuevo Pedido"
+
+#, python-format
+msgid "Customer since %(date)s"
+msgstr "Cliente desde %(date)s"
+
+msgid "Total Orders"
+msgstr "Total de Pedidos"
+
+msgid "Total Spent"
+msgstr "Total Gastado"
+
+msgid "Active Orders"
+msgstr "Pedidos Activos"
+
+msgid "Has Measurements"
+msgstr "Con Medidas"
+
+msgid "Yes"
+msgstr "Sí"
+
+msgid "No"
+msgstr "No"
+
+msgid "Order History"
+msgstr "Historial de Pedidos"
+
+msgid "Due:"
+msgstr "Entrega:"
+
+msgid "No orders yet."
+msgstr "Aún no hay pedidos."
+
+msgid "Latest Measurements"
+msgstr "Últimas Medidas"
+
+msgid "Recorded:"
+msgstr "Registrado:"
+
+msgid "Bust"
+msgstr "Busto"
+
+msgid "Waist"
+msgstr "Cintura"
+
+msgid "Hips"
+msgstr "Caderas"
+
+msgid "Shoulder"
+msgstr "Hombro"
+
+msgid "Sleeve"
+msgstr "Manga"
+
+msgid "Length"
+msgstr "Largo"
+
+msgid "Inseam"
+msgstr "Entrepierna"
+
+msgid "Neck"
+msgstr "Cuello"
+
+msgid "No measurements recorded yet. They will be saved when creating an order."
+msgstr "Aún no hay medidas registradas. Se guardarán al crear un pedido."
+
+msgid "Customer Notes"
+msgstr "Notas del Cliente"
+
+# ============================================================
+#  Dashboard
+# ============================================================
+
+msgid "Live"
+msgstr "En vivo"
+
+msgid "Last updated:"
+msgstr "Última actualización:"
+
+msgid "Production Board"
+msgstr "Panel de Producción"
+
+msgid "Admin Panel"
+msgstr "Panel de Administración"
+
+msgid "All Orders"
+msgstr "Todos los Pedidos"
+
+msgid "Overdue"
+msgstr "Atrasado"
+
+msgid "Total Revenue"
+msgstr "Ingresos Totales"
+
+msgid "Across all orders"
+msgstr "En todos los pedidos"
+
+msgid "Deposits Collected"
+msgstr "Depósitos Cobrados"
+
+msgid "Paid at intake"
+msgstr "Pagado al recibir"
+
+msgid "Balance Outstanding"
+msgstr "Saldo Pendiente"
+
+msgid "Still to collect"
+msgstr "Por cobrar"
+
+msgid "Low stock alert:"
+msgstr "Alerta de stock bajo:"
+
+#, python-format
+msgid "%(counter)s material below threshold."
+msgid_plural "%(counter)s materials below threshold."
+msgstr[0] "%(counter)s material bajo el umbral."
+msgstr[1] "%(counter)s materiales bajo el umbral."
+
+msgid "left"
+msgstr "restantes"
+
+msgid "Manage materials"
+msgstr "Gestionar materiales"
+
+msgid "Search customer, garment, color…"
+msgstr "Buscar cliente, prenda, color…"
+
+msgid "Newest first"
+msgstr "Más recientes primero"
+
+msgid "Oldest first"
+msgstr "Más antiguos primero"
+
+msgid "Loading…"
+msgstr "Cargando…"
+
+msgid "No orders match the current filters."
+msgstr "Ningún pedido coincide con los filtros actuales."
+
+msgid "Load more"
+msgstr "Cargar más"
+
+msgid "Showing"
+msgstr "Mostrando"
+
+msgid "of"
+msgstr "de"
+
+msgid "orders"
+msgstr "pedidos"
+
+msgid "Cancelled"
+msgstr "Cancelado"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Edit order"
+msgstr "Editar pedido"
+
+msgid "Customer history"
+msgstr "Historial del cliente"
+
+msgid "Due in"
+msgstr "Vence en"
+
+msgid "d"
+msgstr "d"
+
+# ============================================================
+#  Production board
+# ============================================================
+
+msgid "Total Active"
+msgstr "Total Activos"
+
+msgid "All Priorities"
+msgstr "Todas las Prioridades"
+
+msgid "Overdue only"
+msgstr "Solo atrasados"
+
+msgid "No deadline"
+msgstr "Sin fecha límite"
+
+msgid "No pending tickets"
+msgstr "Sin tickets pendientes"
+
+msgid "Nothing in progress"
+msgstr "Nada en progreso"
+
+msgid "No completed tickets yet"
+msgstr "Aún no hay tickets completados"
+
+msgid "Update Ticket"
+msgstr "Actualizar Ticket"
+
+msgid "Assign to Employee"
+msgstr "Asignar a Empleado"
+
+msgid "— Keep current —"
+msgstr "— Mantener actual —"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Error saving:"
+msgstr "Error al guardar:"
+
+msgid "unknown"
+msgstr "desconocido"
+
+# ============================================================
+#  Order wizard — sidebar / steps
+# ============================================================
+
+msgid "Step-by-step intake"
+msgstr "Recepción paso a paso"
+
+msgid "Select or create"
+msgstr "Seleccionar o crear"
+
+msgid "Items & Pricing"
+msgstr "Artículos y Precios"
+
+msgid "Services and quantities"
+msgstr "Servicios y cantidades"
+
+msgid "Body dimensions"
+msgstr "Dimensiones corporales"
+
+msgid "Delivery & Payment"
+msgstr "Entrega y Pago"
+
+msgid "Pickup or delivery"
+msgstr "Recogida o entrega"
+
+msgid "Order Summary"
+msgstr "Resumen del Pedido"
+
+msgid "Subtotal"
+msgstr "Subtotal"
+
+msgid "Balance Due"
+msgstr "Saldo Pendiente"
+
+msgid "Back to dashboard"
+msgstr "Volver al panel"
+
+# ============================================================
+#  Order wizard — Step 1: customer
+# ============================================================
+
+msgid "Select Customer"
+msgstr "Seleccionar Cliente"
+
+msgid "Search for an existing customer or register a new one."
+msgstr "Busca un cliente existente o registra uno nuevo."
+
+msgid "Find Existing Customer"
+msgstr "Buscar Cliente Existente"
+
+msgid "Type name, phone, or email…"
+msgstr "Escribe nombre, teléfono o correo…"
+
+msgid "Start typing to search, then click a result."
+msgstr "Empieza a escribir para buscar y haz clic en un resultado."
+
+msgid "Change"
+msgstr "Cambiar"
+
+msgid "Customer not in system?"
+msgstr "¿Cliente no está en el sistema?"
+
+msgid "Register new customer"
+msgstr "Registrar nuevo cliente"
+
+msgid "+ Register new customer"
+msgstr "+ Registrar nuevo cliente"
+
+msgid "← Back to search"
+msgstr "← Volver a búsqueda"
+
+msgid "New Customer Details"
+msgstr "Datos del Nuevo Cliente"
+
+msgid "First name"
+msgstr "Nombre"
+
+msgid "Last name"
+msgstr "Apellido"
+
+msgid "Phone"
+msgstr "Teléfono"
+
+msgid "Email"
+msgstr "Correo electrónico"
+
+msgid "Address"
+msgstr "Dirección"
+
+msgid "Notes / preferences"
+msgstr "Notas / preferencias"
+
+msgid "E.g. prefers loose fit, allergic to synthetic fabrics…"
+msgstr "P. ej. prefiere ajuste holgado, alérgico/a a telas sintéticas…"
+
+msgid "New customer"
+msgstr "Nuevo cliente"
+
+# ============================================================
+#  Order wizard — Step 2: items
+# ============================================================
+
+msgid "Add each garment or service. Prices auto-fill from the catalogue."
+msgstr "Añade cada prenda o servicio. Los precios se autocompletan desde el catálogo."
+
+msgid "Add another item"
+msgstr "Añadir otro artículo"
+
+msgid "Order Settings"
+msgstr "Ajustes del Pedido"
+
+msgid "Order notes"
+msgstr "Notas del pedido"
+
+msgid "Special instructions, urgency notes…"
+msgstr "Instrucciones especiales, notas de urgencia…"
+
+msgid "Remove"
+msgstr "Quitar"
+
+msgid "Service / Catalogue"
+msgstr "Servicio / Catálogo"
+
+msgid "— Choose a service —"
+msgstr "— Elige un servicio —"
+
+msgid "Garment type"
+msgstr "Tipo de prenda"
+
+msgid "— Select after service —"
+msgstr "— Seleccionar tras elegir servicio —"
+
+msgid "Material / Fabric"
+msgstr "Material / Tela"
+
+msgid "— Select material —"
+msgstr "— Seleccionar material —"
+
+msgid "stock"
+msgstr "stock"
+
+msgid "Color"
+msgstr "Color"
+
+msgid "e.g. Navy blue"
+msgstr "p. ej. Azul marino"
+
+msgid "Quantity"
+msgstr "Cantidad"
+
+msgid "Unit price"
+msgstr "Precio unitario"
+
+msgid "Assigned employee"
+msgstr "Empleado asignado"
+
+msgid "Assign later"
+msgstr "Asignar más tarde"
+
+msgid "Item notes (design details, special requests)"
+msgstr "Notas del artículo (detalles de diseño, solicitudes especiales)"
+
+msgid "e.g. Extra padding on shoulders, shorter hem by 3cm…"
+msgstr "p. ej. Hombros con más relleno, dobladillo más corto 3 cm…"
+
+msgid "— Select type —"
+msgstr "— Seleccionar tipo —"
+
+msgid "✓ Auto-filled"
+msgstr "✓ Autocompletado"
+
+msgid "✎ Modified"
+msgstr "✎ Modificado"
+
+msgid "Step"
+msgstr "Paso"
+
+# ============================================================
+#  Order wizard — Step 3: measurements
+# ============================================================
+
+msgid "Record body measurements for garments that require them."
+msgstr "Registra las medidas corporales para las prendas que las requieran."
+
+msgid "No measurements required"
+msgstr "No se requieren medidas"
+
+msgid ""
+"None of the selected services require body measurements. Click Next to "
+"continue."
+msgstr ""
+"Ninguno de los servicios seleccionados requiere medidas corporales. "
+"Haz clic en Siguiente para continuar."
+
+msgid "Measurements pre-filled on"
+msgstr "Medidas precargadas el"
+
+msgid "Update any that have changed."
+msgstr "Actualiza las que hayan cambiado."
+
+msgid "📏 Body Measurements (cm)"
+msgstr "📏 Medidas corporales (cm)"
+
+msgid "Measurement notes"
+msgstr "Notas de medidas"
+
+msgid "e.g. Posture notes, fitting preferences…"
+msgstr "p. ej. Notas de postura, preferencias de ajuste…"
+
+msgid "Pre-filled from"
+msgstr "Precargadas del"
+
+# ============================================================
+#  Order wizard — Step 4: delivery & payment
+# ============================================================
+
+msgid "Choose delivery method and record any deposit received."
+msgstr "Elige el método de entrega y registra cualquier depósito recibido."
+
+msgid "Delivery Method"
+msgstr "Método de Entrega"
+
+msgid "In-store pickup"
+msgstr "Recogida en tienda"
+
+msgid "Customer collects at the shop"
+msgstr "El cliente recoge en la tienda"
+
+msgid "Home delivery"
+msgstr "Entrega a domicilio"
+
+msgid "Shipped to customer's address"
+msgstr "Enviado a la dirección del cliente"
+
+msgid "Delivery address"
+msgstr "Dirección de entrega"
+
+msgid "Full delivery address"
+msgstr "Dirección completa de entrega"
+
+msgid "Requested delivery date"
+msgstr "Fecha de entrega solicitada"
+
+msgid "Payment & Deposit"
+msgstr "Pago y Depósito"
+
+msgid "Deposit method"
+msgstr "Método de depósito"
+
+msgid "Cash"
+msgstr "Efectivo"
+
+msgid "Card"
+msgstr "Tarjeta"
+
+msgid "Bank Transfer"
+msgstr "Transferencia bancaria"
+
+msgid "Deposit amount received today"
+msgstr "Cantidad de depósito recibida hoy"
+
+msgid "Order Total"
+msgstr "Total del Pedido"
+
+msgid "Deposit Today"
+msgstr "Depósito Hoy"
+
+msgid "Balance on Pickup"
+msgstr "Saldo al Recoger"
+
+msgid "Internal Notes"
+msgstr "Notas Internas"
+
+msgid "Notes for staff only — not shown to customer…"
+msgstr "Notas solo para el personal — no se muestran al cliente…"
+
+msgid "Back"
+msgstr "Atrás"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Save Order & Generate Tickets"
+msgstr "Guardar Pedido y Generar Tickets"
+
+# ============================================================
+#  Order wizard — JS messages
+# ============================================================
+
+msgid "No customers found. Try a different term or register below."
+msgstr "No se encontraron clientes. Prueba con otro término o registra uno abajo."
+
+msgid "No phone"
+msgstr "Sin teléfono"
+
+msgid "order"
+msgstr "pedido"
+
+msgid "previous order"
+msgstr "pedido anterior"
+
+msgid "previous orders"
+msgstr "pedidos anteriores"
+
+msgid "An order must have at least one item."
+msgstr "Un pedido debe tener al menos un artículo."
+
+msgid "Please select a customer or register a new one."
+msgstr "Por favor selecciona un cliente o registra uno nuevo."
+
+msgid "Add at least one item before continuing."
+msgstr "Añade al menos un artículo antes de continuar."
+
+msgid "Please select a service from the catalogue for each item."
+msgstr "Por favor selecciona un servicio del catálogo para cada artículo."
+
+msgid "No customer selected."
+msgstr "Ningún cliente seleccionado."
+
+msgid "No items added."
+msgstr "No se han añadido artículos."

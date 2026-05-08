@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>New Order — Sewing Shop</title>
+<title>{% trans "New Order" %} — {% trans "Sewing Shop" %}</title>
 <style>
 :root {
   --bg: #f4f7fb;
@@ -165,38 +165,38 @@ input[readonly] { background: #f8fafc; color: var(--muted); }
 
   <!-- Sidebar -->
   <aside class="sidebar">
-    <h2>New Order</h2>
-    <p class="sub">Step-by-step intake</p>
+    <h2>{% trans "New Order" %}</h2>
+    <p class="sub">{% trans "Step-by-step intake" %}</p>
     <nav class="step-nav">
       <div class="step-nav-item active" data-goto="1">
         <span class="step-num">1</span>
-        <div><strong>Customer</strong><br><small>Select or create</small></div>
+        <div><strong>{% trans "Customer" %}</strong><br><small>{% trans "Select or create" %}</small></div>
       </div>
       <div class="step-nav-item" data-goto="2">
         <span class="step-num">2</span>
-        <div><strong>Items & Pricing</strong><br><small>Services and quantities</small></div>
+        <div><strong>{% trans "Items & Pricing" %}</strong><br><small>{% trans "Services and quantities" %}</small></div>
       </div>
       <div class="step-nav-item" data-goto="3">
         <span class="step-num">3</span>
-        <div><strong>Measurements</strong><br><small>Body dimensions</small></div>
+        <div><strong>{% trans "Measurements" %}</strong><br><small>{% trans "Body dimensions" %}</small></div>
       </div>
       <div class="step-nav-item" data-goto="4">
         <span class="step-num">4</span>
-        <div><strong>Delivery & Payment</strong><br><small>Pickup or delivery</small></div>
+        <div><strong>{% trans "Delivery & Payment" %}</strong><br><small>{% trans "Pickup or delivery" %}</small></div>
       </div>
     </nav>
 
     <div class="sidebar-summary">
-      <h4>Order Summary</h4>
-      <div class="summary-row"><span class="label">Customer</span><span class="value" id="summaryCustomer">—</span></div>
-      <div class="summary-row"><span class="label">Items</span><span class="value" id="summaryItems">0</span></div>
-      <div class="summary-row"><span class="label">Subtotal</span><span class="value" id="summarySubtotal">$0.00</span></div>
-      <div class="summary-row"><span class="label">Deposit</span><span class="value" id="summaryDeposit">$0.00</span></div>
-      <div class="summary-total"><span>Balance Due</span><span id="summaryBalance">$0.00</span></div>
+      <h4>{% trans "Order Summary" %}</h4>
+      <div class="summary-row"><span class="label">{% trans "Customer" %}</span><span class="value" id="summaryCustomer">—</span></div>
+      <div class="summary-row"><span class="label">{% trans "Items" %}</span><span class="value" id="summaryItems">0</span></div>
+      <div class="summary-row"><span class="label">{% trans "Subtotal" %}</span><span class="value" id="summarySubtotal">$0.00</span></div>
+      <div class="summary-row"><span class="label">{% trans "Deposit" %}</span><span class="value" id="summaryDeposit">$0.00</span></div>
+      <div class="summary-total"><span>{% trans "Balance Due" %}</span><span id="summaryBalance">$0.00</span></div>
     </div>
 
     <div style="margin-top: 1.5rem;">
-      <a href="/" style="color: #94a3b8; font-size: .82rem;">← Back to dashboard</a>
+      <a href="/" style="color: #94a3b8; font-size: .82rem;">← {% trans "Back to dashboard" %}</a>
     </div>
   </aside>
 
@@ -218,22 +218,22 @@ input[readonly] { background: #f8fafc; color: var(--muted); }
       <!-- ── STEP 1: Customer ─────────────────────────── -->
       <section data-step="1">
         <div class="step-header">
-          <h1>Select Customer</h1>
-          <p>Search for an existing customer or register a new one.</p>
+          <h1>{% trans "Select Customer" %}</h1>
+          <p>{% trans "Search for an existing customer or register a new one." %}</p>
         </div>
 
         <!-- Search & dropdown -->
         <div class="card" id="customerSearchCard">
-          <div class="card-header"><span class="icon">🔍</span> Find Existing Customer</div>
+          <div class="card-header"><span class="icon">🔍</span> {% trans "Find Existing Customer" %}</div>
           <div class="customer-select-wrap">
             <input
               type="text" id="customerSearch"
-              placeholder="Type name, phone, or email…"
+              placeholder="{% trans 'Type name, phone, or email…' %}"
               autocomplete="off"
             >
             <div id="customerDropdown" class="customer-dropdown hidden"></div>
           </div>
-          <p class="hint">Start typing to search, then click a result.</p>
+          <p class="hint">{% trans "Start typing to search, then click a result." %}</p>
         </div>
 
         <!-- Selected customer display -->
@@ -244,43 +244,43 @@ input[readonly] { background: #f8fafc; color: var(--muted); }
               <div class="name" id="selectedName"></div>
               <div class="meta" id="selectedMeta"></div>
             </div>
-            <button type="button" class="change-btn" id="changeCustomerBtn">Change</button>
+            <button type="button" class="change-btn" id="changeCustomerBtn">{% trans "Change" %}</button>
           </div>
         </div>
 
         <!-- New customer toggle -->
         <div class="new-customer-toggle" id="newCustomerToggle">
-          <span style="color:var(--muted)">Customer not in system? </span>
-          <button type="button" id="toggleNewCustomer">+ Register new customer</button>
+          <span style="color:var(--muted)">{% trans "Customer not in system?" %} </span>
+          <button type="button" id="toggleNewCustomer">+ {% trans "Register new customer" %}</button>
         </div>
 
         <!-- New customer form -->
         <div class="card new-customer-form hidden" id="newCustomerForm">
-          <div class="card-header"><span class="icon">👤</span> New Customer Details</div>
+          <div class="card-header"><span class="icon">👤</span> {% trans "New Customer Details" %}</div>
           <div class="field-group">
             <div>
-              <label>First name <span class="req">*</span></label>
+              <label>{% trans "First name" %} <span class="req">*</span></label>
               <input type="text" name="new_first_name" id="newFirstName" placeholder="Ana">
             </div>
             <div>
-              <label>Last name <span class="req">*</span></label>
+              <label>{% trans "Last name" %} <span class="req">*</span></label>
               <input type="text" name="new_last_name" id="newLastName" placeholder="García">
             </div>
             <div>
-              <label>Phone</label>
+              <label>{% trans "Phone" %}</label>
               <input type="tel" name="new_phone" placeholder="+34 600 000 000">
             </div>
             <div>
-              <label>Email</label>
+              <label>{% trans "Email" %}</label>
               <input type="email" name="new_email" placeholder="ana@example.com">
             </div>
             <div class="field-span2">
-              <label>Address</label>
+              <label>{% trans "Address" %}</label>
               <input type="text" name="new_address" placeholder="Calle Mayor 1, Madrid">
             </div>
             <div class="field-span2">
-              <label>Notes / preferences</label>
-              <textarea name="new_customer_notes" placeholder="E.g. prefers loose fit, allergic to synthetic fabrics…"></textarea>
+              <label>{% trans "Notes / preferences" %}</label>
+              <textarea name="new_customer_notes" placeholder="{% trans 'E.g. prefers loose fit, allergic to synthetic fabrics…' %}"></textarea>
             </div>
           </div>
         </div>
@@ -289,25 +289,25 @@ input[readonly] { background: #f8fafc; color: var(--muted); }
       <!-- ── STEP 2: Items ─────────────────────────────── -->
       <section data-step="2" class="hidden">
         <div class="step-header">
-          <h1>Order Items</h1>
-          <p>Add each garment or service. Prices auto-fill from the catalogue.</p>
+          <h1>{% trans "Order Items" %}</h1>
+          <p>{% trans "Add each garment or service. Prices auto-fill from the catalogue." %}</p>
         </div>
 
         <div id="itemRows"></div>
 
         <button type="button" class="add-item-btn" id="addItemBtn">
-          + Add another item
+          + {% trans "Add another item" %}
         </button>
 
         <div class="card" style="margin-top:1rem;">
-          <div class="card-header"><span class="icon">📅</span> Order Settings</div>
+          <div class="card-header"><span class="icon">📅</span> {% trans "Order Settings" %}</div>
           <div class="field-group">
             <div>
-              <label>Due date</label>
+              <label>{% trans "Due date" %}</label>
               <input type="date" name="due_date" id="dueDate">
             </div>
             <div>
-              <label>Priority</label>
+              <label>{% trans "Priority" %}</label>
               <select name="priority" id="priority">
                 {% for p in priorities %}
                 <option value="{{ p.value }}">{{ p.label }}</option>
@@ -315,25 +315,25 @@ input[readonly] { background: #f8fafc; color: var(--muted); }
               </select>
             </div>
             <div class="field-span2">
-              <label>Order notes</label>
-              <textarea name="order_notes" placeholder="Special instructions, urgency notes…"></textarea>
+              <label>{% trans "Order notes" %}</label>
+              <textarea name="order_notes" placeholder="{% trans 'Special instructions, urgency notes…' %}"></textarea>
             </div>
           </div>
         </div>
 
         <div class="totals-bar">
-          <div class="t-item"><div class="t-label">Subtotal</div><div class="t-value" id="subtotalView">$0.00</div></div>
-          <div class="t-item"><div class="t-label">Deposit</div><div class="t-value" id="depositView">$0.00</div></div>
-          <div class="t-item"><div class="t-label">Balance Due</div><div class="t-value balance" id="balanceView">$0.00</div></div>
-          <div class="t-item"><div class="t-label">Items</div><div class="t-value" id="itemCountView">0</div></div>
+          <div class="t-item"><div class="t-label">{% trans "Subtotal" %}</div><div class="t-value" id="subtotalView">$0.00</div></div>
+          <div class="t-item"><div class="t-label">{% trans "Deposit" %}</div><div class="t-value" id="depositView">$0.00</div></div>
+          <div class="t-item"><div class="t-label">{% trans "Balance Due" %}</div><div class="t-value balance" id="balanceView">$0.00</div></div>
+          <div class="t-item"><div class="t-label">{% trans "Items" %}</div><div class="t-value" id="itemCountView">0</div></div>
         </div>
       </section>
 
       <!-- ── STEP 3: Measurements ──────────────────────── -->
       <section data-step="3" class="hidden">
         <div class="step-header">
-          <h1>Measurements</h1>
-          <p>Record body measurements for garments that require them.</p>
+          <h1>{% trans "Measurements" %}</h1>
+          <p>{% trans "Record body measurements for garments that require them." %}</p>
         </div>
         <div id="measurementSections"></div>
       </section>
@@ -341,19 +341,19 @@ input[readonly] { background: #f8fafc; color: var(--muted); }
       <!-- ── STEP 4: Delivery & Payment ───────────────── -->
       <section data-step="4" class="hidden">
         <div class="step-header">
-          <h1>Delivery & Payment</h1>
-          <p>Choose delivery method and record any deposit received.</p>
+          <h1>{% trans "Delivery & Payment" %}</h1>
+          <p>{% trans "Choose delivery method and record any deposit received." %}</p>
         </div>
 
         <div class="card">
-          <div class="card-header"><span class="icon">🚚</span> Delivery Method</div>
+          <div class="card-header"><span class="icon">🚚</span> {% trans "Delivery Method" %}</div>
           <div
             class="delivery-option selected"
             data-method="pickup"
             onclick="selectDelivery('pickup', this)"
           >
             <span class="icon">🏪</span>
-            <div><div class="label">In-store pickup</div><div class="desc">Customer collects at the shop</div></div>
+            <div><div class="label">{% trans "In-store pickup" %}</div><div class="desc">{% trans "Customer collects at the shop" %}</div></div>
           </div>
           <div
             class="delivery-option"
@@ -361,61 +361,61 @@ input[readonly] { background: #f8fafc; color: var(--muted); }
             onclick="selectDelivery('home_delivery', this)"
           >
             <span class="icon">📦</span>
-            <div><div class="label">Home delivery</div><div class="desc">Shipped to customer's address</div></div>
+            <div><div class="label">{% trans "Home delivery" %}</div><div class="desc">{% trans "Shipped to customer's address" %}</div></div>
           </div>
           <input type="hidden" name="delivery_method" id="deliveryMethodInput" value="pickup">
         </div>
 
         <div class="card hidden" id="deliveryAddressCard">
-          <div class="card-header"><span class="icon">📍</span> Delivery Details</div>
+          <div class="card-header"><span class="icon">📍</span> {% trans "Delivery Details" %}</div>
           <div class="field-group">
             <div class="field-span2">
-              <label>Delivery address</label>
-              <input type="text" name="delivery_address" id="deliveryAddress" placeholder="Full delivery address">
+              <label>{% trans "Delivery address" %}</label>
+              <input type="text" name="delivery_address" id="deliveryAddress" placeholder="{% trans 'Full delivery address' %}">
             </div>
             <div>
-              <label>Requested delivery date</label>
+              <label>{% trans "Requested delivery date" %}</label>
               <input type="date" name="delivery_date">
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-header"><span class="icon">💰</span> Payment & Deposit</div>
+          <div class="card-header"><span class="icon">💰</span> {% trans "Payment & Deposit" %}</div>
           <div class="field-group">
             <div>
-              <label>Deposit method</label>
+              <label>{% trans "Deposit method" %}</label>
               <select name="deposit_method">
-                <option value="cash">Cash</option>
-                <option value="card">Card</option>
-                <option value="transfer">Bank Transfer</option>
+                <option value="cash">{% trans "Cash" %}</option>
+                <option value="card">{% trans "Card" %}</option>
+                <option value="transfer">{% trans "Bank Transfer" %}</option>
               </select>
             </div>
             <div>
-              <label>Deposit amount received today</label>
+              <label>{% trans "Deposit amount received today" %}</label>
               <input type="number" name="deposit_amount" id="depositAmountInput" step="0.01" min="0" value="0" placeholder="0.00">
             </div>
           </div>
           <div class="totals-bar" style="margin-top:.75rem;">
-            <div class="t-item"><div class="t-label">Order Total</div><div class="t-value" id="finalTotalView">$0.00</div></div>
-            <div class="t-item"><div class="t-label">Deposit Today</div><div class="t-value" id="finalDepositView">$0.00</div></div>
-            <div class="t-item"><div class="t-label">Balance on Pickup</div><div class="t-value balance" id="finalBalanceView">$0.00</div></div>
+            <div class="t-item"><div class="t-label">{% trans "Order Total" %}</div><div class="t-value" id="finalTotalView">$0.00</div></div>
+            <div class="t-item"><div class="t-label">{% trans "Deposit Today" %}</div><div class="t-value" id="finalDepositView">$0.00</div></div>
+            <div class="t-item"><div class="t-label">{% trans "Balance on Pickup" %}</div><div class="t-value balance" id="finalBalanceView">$0.00</div></div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-header"><span class="icon">📝</span> Internal Notes</div>
-          <textarea name="internal_notes" placeholder="Notes for staff only — not shown to customer…"></textarea>
+          <div class="card-header"><span class="icon">📝</span> {% trans "Internal Notes" %}</div>
+          <textarea name="internal_notes" placeholder="{% trans 'Notes for staff only — not shown to customer…' %}"></textarea>
         </div>
       </section>
 
       <!-- Actions bar -->
       <div class="actions-bar">
-        <button type="button" class="btn" id="backBtn" style="visibility:hidden">← Back</button>
+        <button type="button" class="btn" id="backBtn" style="visibility:hidden">← {% trans "Back" %}</button>
         <div style="display:flex; gap:.6rem; align-items:center;">
           <span id="stepIndicator" style="color:var(--muted); font-size:.82rem; margin-right:.3rem;"></span>
-          <button type="button" class="btn primary" id="nextBtn">Next →</button>
-          <button type="submit" class="btn success hidden" id="saveBtn">✓ Save Order &amp; Generate Tickets</button>
+          <button type="button" class="btn primary" id="nextBtn">{% trans "Next" %} →</button>
+          <button type="submit" class="btn success hidden" id="saveBtn">✓ {% trans "Save Order & Generate Tickets" %}</button>
         </div>
       </div>
 
@@ -423,8 +423,69 @@ input[readonly] { background: #f8fafc; color: var(--muted); }
   </main>
 </div>
 
+{# i18n strings exposed to JS for the wizard #}
+<script id="wizard-i18n" type="application/json">
+{
+  "NoCustomersFound": "{% trans 'No customers found. Try a different term or register below.' %}",
+  "NoPhone": "{% trans 'No phone' %}",
+  "OrderSingular": "{% trans 'order' %}",
+  "OrderPlural": "{% trans 'orders' %}",
+  "PreviousOrderSingular": "{% trans 'previous order' %}",
+  "PreviousOrderPlural": "{% trans 'previous orders' %}",
+  "NewCustomer": "{% trans 'New customer' %}",
+  "BackToSearch": "{% trans '← Back to search' %}",
+  "RegisterNewCustomer": "{% trans '+ Register new customer' %}",
+  "Item": "{% trans 'Item' %}",
+  "Remove": "{% trans 'Remove' %}",
+  "ServiceCatalogue": "{% trans 'Service / Catalogue' %}",
+  "ChooseService": "{% trans '— Choose a service —' %}",
+  "GarmentType": "{% trans 'Garment type' %}",
+  "SelectAfterService": "{% trans '— Select after service —' %}",
+  "MaterialFabric": "{% trans 'Material / Fabric' %}",
+  "SelectMaterial": "{% trans '— Select material —' %}",
+  "Stock": "{% trans 'stock' %}",
+  "Color": "{% trans 'Color' %}",
+  "ColorPlaceholder": "{% trans 'e.g. Navy blue' %}",
+  "Quantity": "{% trans 'Quantity' %}",
+  "UnitPrice": "{% trans 'Unit price' %}",
+  "AssignedEmployee": "{% trans 'Assigned employee' %}",
+  "AssignLater": "{% trans 'Assign later' %}",
+  "ItemNotesLabel": "{% trans 'Item notes (design details, special requests)' %}",
+  "ItemNotesPlaceholder": "{% trans 'e.g. Extra padding on shoulders, shorter hem by 3cm…' %}",
+  "SelectType": "{% trans '— Select type —' %}",
+  "AutoFilled": "{% trans '✓ Auto-filled' %}",
+  "Modified": "{% trans '✎ Modified' %}",
+  "StepOf": "{% trans 'Step' %}",
+  "OfTotal": "{% trans 'of' %}",
+  "ErrAtLeastOneItem": "{% trans 'An order must have at least one item.' %}",
+  "ErrSelectCustomer": "{% trans 'Please select a customer or register a new one.' %}",
+  "ErrFirstLastRequired": "{% trans 'First and last name are required for a new customer.' %}",
+  "ErrAddOneItem": "{% trans 'Add at least one item before continuing.' %}",
+  "ErrSelectService": "{% trans 'Please select a service from the catalogue for each item.' %}",
+  "ErrNoCustomerSelected": "{% trans 'No customer selected.' %}",
+  "ErrNoItems": "{% trans 'No items added.' %}",
+  "NoMeasurementsRequired": "{% trans 'No measurements required' %}",
+  "NoMeasurementsBody": "{% trans 'None of the selected services require body measurements. Click Next to continue.' %}",
+  "MeasurementsPrefilled": "{% trans 'Measurements pre-filled on' %}",
+  "UpdateChanged": "{% trans 'Update any that have changed.' %}",
+  "BodyMeasurements": "{% trans '📏 Body Measurements (cm)' %}",
+  "MeasurementNotes": "{% trans 'Measurement notes' %}",
+  "MeasurementNotesPlaceholder": "{% trans 'e.g. Posture notes, fitting preferences…' %}",
+  "PrefilledFrom": "{% trans 'Pre-filled from' %}",
+  "Bust": "{% trans 'Bust' %}",
+  "Waist": "{% trans 'Waist' %}",
+  "Hips": "{% trans 'Hips' %}",
+  "Shoulder": "{% trans 'Shoulder' %}",
+  "Sleeve": "{% trans 'Sleeve' %}",
+  "Length": "{% trans 'Length' %}",
+  "Inseam": "{% trans 'Inseam' %}",
+  "Neck": "{% trans 'Neck' %}"
+}
+</script>
+
 <script>
 // ── Data from Django ───────────────────────────────────────────────────────
+const T = JSON.parse(document.getElementById("wizard-i18n").textContent);
 const CATALOGUE = JSON.parse(document.getElementById("catalogue-items-data").textContent);
 const EMPLOYEES = JSON.parse(document.getElementById("employees-data").textContent);
 const ALL_CUSTOMERS = JSON.parse(document.getElementById("customers-data").textContent);
@@ -468,7 +529,7 @@ function updateStepper() {
   $("backBtn").style.visibility = state.step === 1 ? "hidden" : "visible";
   $("nextBtn").classList.toggle("hidden", state.step === 4);
   $("saveBtn").classList.toggle("hidden", state.step !== 4);
-  $("stepIndicator").textContent = `Step ${state.step} of 4`;
+  $("stepIndicator").textContent = `${T.StepOf} ${state.step} ${T.OfTotal} 4`;
 
   // Skip measurements if nothing needs them
   if (state.step === 3) buildMeasurementSections();
@@ -487,15 +548,15 @@ const customerDropdown = $("customerDropdown");
 
 function renderCustomerDropdown(results) {
   if (!results.length) {
-    customerDropdown.innerHTML = '<div style="padding:.7rem;color:var(--muted);font-size:.85rem;">No customers found. Try a different term or register below.</div>';
+    customerDropdown.innerHTML = `<div style="padding:.7rem;color:var(--muted);font-size:.85rem;">${T.NoCustomersFound}</div>`;
   } else {
     customerDropdown.innerHTML = results.map(c => `
       <div class="customer-option" data-customer='${JSON.stringify(c).replace(/'/g, "&#39;")}'>
         <div>
           <div class="name">${c.name}</div>
-          <div class="meta">${c.phone || "No phone"} ${c.email ? "· " + c.email : ""}</div>
+          <div class="meta">${c.phone || T.NoPhone} ${c.email ? "· " + c.email : ""}</div>
         </div>
-        <span class="badge">${c.order_count} order${c.order_count !== 1 ? "s" : ""}</span>
+        <span class="badge">${c.order_count} ${c.order_count !== 1 ? T.OrderPlural : T.OrderSingular}</span>
       </div>
     `).join("");
   }
@@ -547,7 +608,8 @@ function selectCustomer(c) {
   avatar.style.background = nameToColor(c.name);
 
   $("selectedName").textContent = c.name;
-  const meta = [c.phone, c.email, c.address, `${c.order_count} previous order${c.order_count !== 1 ? "s" : ""}`].filter(Boolean);
+  const orderLabel = c.order_count !== 1 ? T.PreviousOrderPlural : T.PreviousOrderSingular;
+  const meta = [c.phone, c.email, c.address, `${c.order_count} ${orderLabel}`].filter(Boolean);
   $("selectedMeta").textContent = meta.join(" · ");
 
   // Update sidebar
@@ -584,13 +646,13 @@ $("toggleNewCustomer").addEventListener("click", () => {
     $("customerId").value = "";
     $("createNewCustomer").value = "1";
     $("selectedCustomerCard").classList.add("hidden");
-    $("summaryCustomer").textContent = "New customer";
-    $("toggleNewCustomer").textContent = "← Back to search";
+    $("summaryCustomer").textContent = T.NewCustomer;
+    $("toggleNewCustomer").textContent = T.BackToSearch;
   } else {
     state.isNewCustomer = false;
     $("createNewCustomer").value = "0";
     $("summaryCustomer").textContent = "—";
-    $("toggleNewCustomer").textContent = "+ Register new customer";
+    $("toggleNewCustomer").textContent = T.RegisterNewCustomer;
   }
 });
 
@@ -603,7 +665,7 @@ function buildItemRow(idx) {
     `<option value="${e.id}">${e.name}${e.role ? " (" + e.role + ")" : ""}</option>`
   ).join("");
   const materialOptions = MATERIALS.map(m =>
-    `<option value="${m.id}" data-color="${m.color || ""}">${m.name}${m.color ? " — " + m.color : ""}${m.stock_quantity !== null ? " (stock: " + m.stock_quantity + ")" : ""}</option>`
+    `<option value="${m.id}" data-color="${m.color || ""}">${m.name}${m.color ? " — " + m.color : ""}${m.stock_quantity !== null ? ` (${T.Stock}: ${m.stock_quantity})` : ""}</option>`
   ).join("");
 
   const div = document.createElement("div");
@@ -611,56 +673,56 @@ function buildItemRow(idx) {
   div.dataset.index = idx;
   div.innerHTML = `
     <div class="item-card-header">
-      <span class="item-label">Item ${idx + 1}</span>
-      <button type="button" class="remove-btn" onclick="removeItem(${idx})">Remove</button>
+      <span class="item-label">${T.Item} ${idx + 1}</span>
+      <button type="button" class="remove-btn" onclick="removeItem(${idx})">${T.Remove}</button>
     </div>
     <div class="field-group cols3">
       <div class="field-span2">
-        <label>Service / Catalogue <span class="req">*</span></label>
+        <label>${T.ServiceCatalogue} <span class="req">*</span></label>
         <select data-field="catalogue_item_id">
-          <option value="">— Choose a service —</option>
+          <option value="">${T.ChooseService}</option>
           ${catalogueOptions}
         </select>
         <div class="hint" data-price-hint></div>
       </div>
       <div>
-        <label>Garment type</label>
+        <label>${T.GarmentType}</label>
         <select data-field="garment_type">
-          <option value="">— Select after service —</option>
+          <option value="">${T.SelectAfterService}</option>
         </select>
       </div>
       <div>
-        <label>Material / Fabric</label>
+        <label>${T.MaterialFabric}</label>
         <select data-field="material_id">
-          <option value="">— Select material —</option>
+          <option value="">${T.SelectMaterial}</option>
           ${materialOptions}
         </select>
       </div>
       <div>
-        <label>Color</label>
-        <input type="text" data-field="color_fabric" placeholder="e.g. Navy blue" list="colorSuggestions">
+        <label>${T.Color}</label>
+        <input type="text" data-field="color_fabric" placeholder="${T.ColorPlaceholder}" list="colorSuggestions">
       </div>
       <div>
-        <label>Quantity</label>
+        <label>${T.Quantity}</label>
         <input type="number" data-field="quantity" value="1" min="1">
       </div>
       <div>
-        <label>Unit price</label>
+        <label>${T.UnitPrice}</label>
         <div style="position:relative;">
           <input type="number" data-field="unit_price" step="0.01" value="0.00">
           <span data-price-badge class="price-chip" style="margin-top:.25rem;"></span>
         </div>
       </div>
       <div>
-        <label>Assigned employee</label>
+        <label>${T.AssignedEmployee}</label>
         <select data-field="assigned_employee_id">
-          <option value="">Assign later</option>
+          <option value="">${T.AssignLater}</option>
           ${employeeOptions}
         </select>
       </div>
       <div class="field-span3">
-        <label>Item notes (design details, special requests)</label>
-        <textarea data-field="item_notes" placeholder="e.g. Extra padding on shoulders, shorter hem by 3cm…" style="min-height:56px;"></textarea>
+        <label>${T.ItemNotesLabel}</label>
+        <textarea data-field="item_notes" placeholder="${T.ItemNotesPlaceholder}" style="min-height:56px;"></textarea>
       </div>
     </div>
   `;
@@ -685,7 +747,7 @@ function addItem() {
 }
 
 function removeItem(idx) {
-  if (state.items.length <= 1) { alert("An order must have at least one item."); return; }
+  if (state.items.length <= 1) { alert(T.ErrAtLeastOneItem); return; }
   state.items.splice(idx, 1);
   // Rebuild all rows
   const savedItems = [...state.items];
@@ -727,7 +789,7 @@ function attachRowListeners(row, idx) {
         // Auto-fill garment types
         const gSelect = row.querySelector('[data-field="garment_type"]');
         const types = Array.isArray(cat.garment_types) && cat.garment_types.length ? cat.garment_types : [cat.name];
-        gSelect.innerHTML = `<option value="">— Select type —</option>` + types.map(t => `<option value="${t}">${t}</option>`).join("");
+        gSelect.innerHTML = `<option value="">${T.SelectType}</option>` + types.map(t => `<option value="${t}">${t}</option>`).join("");
         if (types.length === 1) { gSelect.value = types[0]; state.items[idx].garment_type = types[0]; }
 
         // Auto-fill price
@@ -764,7 +826,7 @@ function setBadge(row, type) {
   const badge = row.querySelector("[data-price-badge]");
   if (!badge) return;
   badge.className = `price-chip ${type}`;
-  badge.textContent = type === "ok" ? "✓ Auto-filled" : "✎ Modified";
+  badge.textContent = type === "ok" ? T.AutoFilled : T.Modified;
 }
 
 function recalcTotals() {
@@ -804,8 +866,8 @@ function buildMeasurementSections() {
   const needsMeasurements = state.items.filter(it => it.requires_measurements);
   if (needsMeasurements.length === 0) {
     container.innerHTML = `<div class="no-measure-note">
-      <strong>No measurements required</strong><br>
-      None of the selected services require body measurements. Click Next to continue.
+      <strong>${T.NoMeasurementsRequired}</strong><br>
+      ${T.NoMeasurementsBody}
     </div>`;
     return;
   }
@@ -816,31 +878,37 @@ function buildMeasurementSections() {
   if (hasPreFill) {
     container.insertAdjacentHTML("beforeend", `
       <div class="alert info">
-        Measurements pre-filled from previous order on <strong>${saved.from_order_date}</strong>.
-        Update any that have changed.
+        ${T.MeasurementsPrefilled} <strong>${saved.from_order_date}</strong>.
+        ${T.UpdateChanged}
       </div>
     `);
   }
+
+  // Translated labels for each measurement field
+  const fieldLabels = {
+    bust: T.Bust, waist: T.Waist, hips: T.Hips, shoulder: T.Shoulder,
+    sleeve: T.Sleeve, length: T.Length, inseam: T.Inseam, neck: T.Neck,
+  };
 
   // One shared measurement section (applies to all items needing it)
   const section = document.createElement("div");
   section.className = "card";
   section.innerHTML = `
-    <div class="card-header"><span class="icon">📏</span> Body Measurements (cm)</div>
+    <div class="card-header"><span class="icon">📏</span> ${T.BodyMeasurements.replace(/^📏\s*/, "")}</div>
     <div class="measurement-grid">
       ${MEAS_FIELDS.map(f => `
         <div class="${hasPreFill && saved[f] ? "meas-prefilled" : ""}">
-          <label>${f.charAt(0).toUpperCase() + f.slice(1)}</label>
+          <label>${fieldLabels[f] || f}</label>
           <input type="number" step="0.5" data-measurement="${f}" placeholder="—"
             value="${hasPreFill && saved[f] ? saved[f] : ""}">
         </div>
       `).join("")}
     </div>
     <div style="margin-top:.7rem;">
-      <label>Measurement notes</label>
-      <textarea data-measurement="notes" placeholder="e.g. Posture notes, fitting preferences…">${hasPreFill && saved.notes ? saved.notes : ""}</textarea>
+      <label>${T.MeasurementNotes}</label>
+      <textarea data-measurement="notes" placeholder="${T.MeasurementNotesPlaceholder}">${hasPreFill && saved.notes ? saved.notes : ""}</textarea>
     </div>
-    ${hasPreFill ? `<span class="meas-source">↩ Pre-filled from ${saved.from_order_date}</span>` : ""}
+    ${hasPreFill ? `<span class="meas-source">↩ ${T.PrefilledFrom} ${saved.from_order_date}</span>` : ""}
   `;
   container.appendChild(section);
 
@@ -863,20 +931,20 @@ $("nextBtn").addEventListener("click", () => {
   if (state.step === 1) {
     const isNew = $("createNewCustomer").value === "1";
     if (!isNew && !state.customer) {
-      alert("Please select a customer or register a new one.");
+      alert(T.ErrSelectCustomer);
       return;
     }
     if (isNew) {
       const fn = $("newFirstName").value.trim();
       const ln = $("newLastName").value.trim();
-      if (!fn || !ln) { alert("First and last name are required for a new customer."); return; }
+      if (!fn || !ln) { alert(T.ErrFirstLastRequired); return; }
       $("summaryCustomer").textContent = fn + " " + ln;
     }
   }
   if (state.step === 2) {
-    if (state.items.length === 0) { alert("Add at least one item before continuing."); return; }
+    if (state.items.length === 0) { alert(T.ErrAddOneItem); return; }
     const hasEmpty = state.items.some(it => !it.catalogue_item_id);
-    if (hasEmpty) { alert("Please select a service from the catalogue for each item."); return; }
+    if (hasEmpty) { alert(T.ErrSelectService); return; }
   }
   state.step = Math.min(4, state.step + 1);
   updateStepper();
@@ -892,8 +960,8 @@ $("backBtn").addEventListener("click", () => {
 // ── Form Submit ────────────────────────────────────────────────────────────
 $("wizardForm").addEventListener("submit", e => {
   const isNew = $("createNewCustomer").value === "1";
-  if (!isNew && !state.customer) { e.preventDefault(); alert("No customer selected."); return; }
-  if (state.items.length === 0) { e.preventDefault(); alert("No items added."); return; }
+  if (!isNew && !state.customer) { e.preventDefault(); alert(T.ErrNoCustomerSelected); return; }
+  if (state.items.length === 0) { e.preventDefault(); alert(T.ErrNoItems); return; }
 
   // Collect shared measurements
   const measurements = {};

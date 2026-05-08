@@ -477,7 +477,15 @@ export function DashboardClient({ data }: { data: DashboardData }) {
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 border-t border-[#f0f0f0]">
                             {[
                               { label: t("expand_assigned"),   value: order.assigned_to || t("unassigned") },
-                              { label: t("expand_priority"),   value: order.priority.charAt(0).toUpperCase() + order.priority.slice(1) },
+                              {
+                                label: t("expand_priority"),
+                                value: (() => {
+                                  const raw = order.priority ?? "normal";
+                                  const base = typeof raw === "string" ? raw : String(raw);
+                                  const s = (base || "normal").toLowerCase();
+                                  return s.charAt(0).toUpperCase() + s.slice(1);
+                                })(),
+                              },
                               { label: t("expand_order_date"), value: order.order_date ? new Date(order.order_date).toLocaleDateString("en-GB") : "—" },
                               { label: t("expand_due_date"),   value: order.due_date   ? new Date(order.due_date).toLocaleDateString("en-GB") : t("not_set") },
                             ].map(({ label, value }) => (

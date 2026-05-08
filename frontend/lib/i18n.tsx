@@ -9,6 +9,7 @@ const translations = {
     nav_dashboard:   "Dashboard",
     nav_new_order:   "New Order",
     nav_production:  "Production",
+    nav_deliveries:  "Deliveries",
     nav_admin:       "Admin",
     nav_settings:    "Settings",
 
@@ -118,7 +119,7 @@ const translations = {
     s3_subtitle:        "Body dimensions for garments that require them.",
     s3_none_needed:     "No measurements required.",
     s3_none_desc:       "None of the selected services need body measurements.",
-    s3_prefilled:       "Pre-filled from a previous order on",
+    s3_prefilled:       "Measurements pre-filled on",
     s3_update_hint:     "Update any that have changed.",
     s3_meas_notes:      "Measurement notes",
     s3_meas_notes_ph:   "Posture notes, fitting preferences…",
@@ -185,6 +186,22 @@ const translations = {
     prio_normal:         "Normal",
     prio_low:            "Low",
 
+    // Deliveries
+    del_title:        "Deliveries",
+    del_subtitle:     "Shipment and pickup records linked to orders (edit details in Django admin).",
+    del_empty:        "No delivery records yet.",
+    del_hint:         "Records appear when home delivery is chosen on a new order, or when staff marks an order as delivered in Admin. Pickup-only orders usually get a delivery row only at handover.",
+    del_col_order:    "Order",
+    del_col_customer: "Customer",
+    del_col_recipient:"Recipient",
+    del_col_method:   "Method",
+    del_col_status:   "Status",
+    del_col_when:     "Delivered",
+    del_col_actions:  " ",
+    del_chip_pending: "Pending",
+    del_chip_done:    "Delivered",
+    del_open_admin:   "Open in admin",
+
     // Customer detail
     cust_since:          "Customer since",
     cust_edit_admin:     "Edit in Admin",
@@ -223,6 +240,7 @@ const translations = {
     nav_dashboard:   "Inicio",
     nav_new_order:   "Nuevo Pedido",
     nav_production:  "Producción",
+    nav_deliveries:  "Entregas",
     nav_admin:       "Admin",
     nav_settings:    "Configuración",
 
@@ -331,7 +349,7 @@ const translations = {
     s3_subtitle:        "Medidas corporales para las prendas que lo requieran.",
     s3_none_needed:     "No se necesitan medidas.",
     s3_none_desc:       "Ninguno de los servicios seleccionados requiere medidas corporales.",
-    s3_prefilled:       "Rellenado desde un pedido anterior del",
+    s3_prefilled:       "Medidas rellenadas el",
     s3_update_hint:     "Actualiza las que hayan cambiado.",
     s3_meas_notes:      "Notas de medidas",
     s3_meas_notes_ph:   "Notas de postura, preferencias de ajuste…",
@@ -397,6 +415,22 @@ const translations = {
     prio_high:           "Alta",
     prio_normal:         "Normal",
     prio_low:            "Baja",
+
+    // Deliveries
+    del_title:        "Entregas",
+    del_subtitle:     "Envíos y recogidas vinculados a pedidos (edición en Django admin).",
+    del_empty:        "Sin registros de entrega todavía.",
+    del_hint:         "Los registros aparecen si eliges envío a domicilio en un pedido nuevo, o cuando en Admin marcas un pedido como entregado. Los pedidos solo con recogida suelen tener fila cuando se entrega.",
+    del_col_order:    "Pedido",
+    del_col_customer: "Cliente",
+    del_col_recipient:"Destinatario",
+    del_col_method:   "Método",
+    del_col_status:   "Estado",
+    del_col_when:     "Entregado",
+    del_col_actions:  " ",
+    del_chip_pending: "Pendiente",
+    del_chip_done:    "Entregado",
+    del_open_admin:   "Abrir en admin",
 
     // Customer detail
     cust_since:          "Cliente desde",

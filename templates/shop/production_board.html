@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Production Board — Sewing Shop</title>
+<title>{% trans "Production Board" %} — {% trans "Sewing Shop" %}</title>
 <style>
 :root {
   --bg: #f4f7fb;
@@ -99,11 +99,11 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
 <body>
 
 <div class="header">
-  <h1>🧵 Production Board</h1>
+  <h1>🧵 {% trans "Production Board" %}</h1>
   <div class="header-right">
     <span style="font-size:.82rem;opacity:.7">{{ today }}</span>
-    <a href="/" class="btn">← Dashboard</a>
-    <a href="/orders/new/" class="btn success">+ New Order</a>
+    <a href="/" class="btn">← {% trans "Dashboard" %}</a>
+    <a href="/orders/new/" class="btn success">+ {% trans "New Order" %}</a>
   </div>
 </div>
 
@@ -112,31 +112,31 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
   <!-- Stats -->
   <div class="board-stats">
     <div class="board-stat">
-      <div class="label">Pending</div>
+      <div class="label">{% trans "Pending" %}</div>
       <div class="value" style="color:var(--warning)">{{ pending_count }}</div>
     </div>
     <div class="board-stat">
-      <div class="label">In Progress</div>
+      <div class="label">{% trans "In Progress" %}</div>
       <div class="value" style="color:var(--info)">{{ in_progress_count }}</div>
     </div>
     <div class="board-stat">
-      <div class="label">Done</div>
+      <div class="label">{% trans "Done" %}</div>
       <div class="value" style="color:var(--success)">{{ done_count }}</div>
     </div>
     <div class="board-stat">
-      <div class="label">Total Active</div>
+      <div class="label">{% trans "Total Active" %}</div>
       <div class="value">{{ pending_count|add:in_progress_count }}</div>
     </div>
   </div>
 
   <!-- Filters -->
   <div class="filters">
-    <span class="filter-pill active" data-priority="all">All Priorities</span>
-    <span class="filter-pill" data-priority="urgent">🔴 Urgent</span>
-    <span class="filter-pill" data-priority="high">🟠 High</span>
-    <span class="filter-pill" data-priority="normal">🔵 Normal</span>
-    <span class="filter-pill" data-priority="low">⚪ Low</span>
-    <span class="filter-pill" data-show-overdue="1" style="color:var(--danger);border-color:#fca5a5">⚠ Overdue only</span>
+    <span class="filter-pill active" data-priority="all">{% trans "All Priorities" %}</span>
+    <span class="filter-pill" data-priority="urgent">🔴 {% trans "Urgent" %}</span>
+    <span class="filter-pill" data-priority="high">🟠 {% trans "High" %}</span>
+    <span class="filter-pill" data-priority="normal">🔵 {% trans "Normal" %}</span>
+    <span class="filter-pill" data-priority="low">⚪ {% trans "Low" %}</span>
+    <span class="filter-pill" data-show-overdue="1" style="color:var(--danger);border-color:#fca5a5">⚠ {% trans "Overdue only" %}</span>
   </div>
 
   <!-- Board -->
@@ -145,7 +145,7 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
     <!-- Pending column -->
     <div class="col col-pending">
       <div class="col-header">
-        <span class="col-title">📋 Pending</span>
+        <span class="col-title">📋 {% trans "Pending" %}</span>
         <span class="col-count" id="pendingCount">{{ pending_count }}</span>
       </div>
       <div id="colPending">
@@ -153,6 +153,7 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
           {% for t in board.pending %}
           <div class="ticket-card {% if t.is_overdue %}overdue{% endif %}"
                data-ticket="{{ t.id }}"
+               data-status="{{ t.ticket_status }}"
                data-priority="{{ t.priority }}"
                data-overdue="{{ t.is_overdue|yesno:'1,0' }}"
                onclick="openTicket(this)">
@@ -170,16 +171,16 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
             <div class="ticket-footer">
               <span class="ticket-stage">{{ t.current_stage }}</span>
               <span class="ticket-deadline {% if t.is_overdue %}overdue{% elif t.deadline %}warn{% endif %}">
-                {% if t.is_overdue %}⚠ Overdue{% elif t.deadline %}{{ t.deadline }}{% else %}No deadline{% endif %}
+                {% if t.is_overdue %}⚠ {% trans "Overdue" %}{% elif t.deadline %}{{ t.deadline }}{% else %}{% trans "No deadline" %}{% endif %}
               </span>
             </div>
-            {% if t.assigned_to != "Unassigned" %}
+            {% if t.is_assigned %}
             <div style="margin-top:.35rem;"><span class="assigned-tag">👷 {{ t.assigned_to }}</span></div>
             {% endif %}
           </div>
           {% endfor %}
         {% else %}
-          <div class="empty-col">No pending tickets</div>
+          <div class="empty-col">{% trans "No pending tickets" %}</div>
         {% endif %}
       </div>
     </div>
@@ -187,7 +188,7 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
     <!-- In Progress column -->
     <div class="col col-progress">
       <div class="col-header">
-        <span class="col-title">⚙ In Progress</span>
+        <span class="col-title">⚙ {% trans "In Progress" %}</span>
         <span class="col-count" id="progressCount">{{ in_progress_count }}</span>
       </div>
       <div id="colProgress">
@@ -195,6 +196,7 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
           {% for t in board.in_progress %}
           <div class="ticket-card {% if t.is_overdue %}overdue{% endif %}"
                data-ticket="{{ t.id }}"
+               data-status="{{ t.ticket_status }}"
                data-priority="{{ t.priority }}"
                data-overdue="{{ t.is_overdue|yesno:'1,0' }}"
                onclick="openTicket(this)">
@@ -212,16 +214,16 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
             <div class="ticket-footer">
               <span class="ticket-stage">{{ t.current_stage }}</span>
               <span class="ticket-deadline {% if t.is_overdue %}overdue{% elif t.deadline %}warn{% endif %}">
-                {% if t.is_overdue %}⚠ Overdue{% elif t.deadline %}{{ t.deadline }}{% else %}No deadline{% endif %}
+                {% if t.is_overdue %}⚠ {% trans "Overdue" %}{% elif t.deadline %}{{ t.deadline }}{% else %}{% trans "No deadline" %}{% endif %}
               </span>
             </div>
-            {% if t.assigned_to != "Unassigned" %}
+            {% if t.is_assigned %}
             <div style="margin-top:.35rem;"><span class="assigned-tag">👷 {{ t.assigned_to }}</span></div>
             {% endif %}
           </div>
           {% endfor %}
         {% else %}
-          <div class="empty-col">Nothing in progress</div>
+          <div class="empty-col">{% trans "Nothing in progress" %}</div>
         {% endif %}
       </div>
     </div>
@@ -229,7 +231,7 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
     <!-- Done column -->
     <div class="col col-done">
       <div class="col-header">
-        <span class="col-title">✅ Done</span>
+        <span class="col-title">✅ {% trans "Done" %}</span>
         <span class="col-count" id="doneCount">{{ done_count }}</span>
       </div>
       <div id="colDone">
@@ -237,6 +239,7 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
           {% for t in board.done %}
           <div class="ticket-card"
                data-ticket="{{ t.id }}"
+               data-status="{{ t.ticket_status }}"
                data-priority="{{ t.priority }}"
                data-overdue="0"
                onclick="openTicket(this)">
@@ -250,12 +253,12 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
             </div>
             <div class="ticket-footer">
               <span class="ticket-stage">{{ t.current_stage }}</span>
-              <span style="font-size:.74rem;color:var(--success);font-weight:600">✓ Complete</span>
+              <span style="font-size:.74rem;color:var(--success);font-weight:600">✓ {% trans "Complete" %}</span>
             </div>
           </div>
           {% endfor %}
         {% else %}
-          <div class="empty-col">No completed tickets yet</div>
+          <div class="empty-col">{% trans "No completed tickets yet" %}</div>
         {% endif %}
       </div>
     </div>
@@ -266,29 +269,39 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
 <!-- Quick-update modal -->
 <div class="modal-overlay hidden" id="ticketModal">
   <div class="modal">
-    <h3 id="modalTitle">Update Ticket</h3>
-    <label>Status</label>
+    <h3 id="modalTitle">{% trans "Update Ticket" %}</h3>
+    <label>{% trans "Status" %}</label>
     <select id="modalStatus">
-      <option value="pending">Pending</option>
-      <option value="in_progress">In Progress</option>
-      <option value="done">Done</option>
+      <option value="pending">{% trans "Pending" %}</option>
+      <option value="in_progress">{% trans "In Progress" %}</option>
+      <option value="done">{% trans "Done" %}</option>
     </select>
-    <label>Assign to Employee</label>
+    <label>{% trans "Assign to Employee" %}</label>
     <select id="modalEmployee">
-      <option value="">— Keep current —</option>
+      <option value="">{% trans "— Keep current —" %}</option>
       {% for emp in employees %}
       <option value="{{ emp.id }}">{{ emp.full_name }}{% if emp.role %} ({{ emp.role }}){% endif %}</option>
       {% endfor %}
     </select>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <a id="modalEditLink" href="#" class="btn-cancel" style="text-decoration:none">Edit in Admin</a>
-      <button class="btn-save" onclick="saveTicket()">Save</button>
+      <button class="btn-cancel" onclick="closeModal()">{% trans "Cancel" %}</button>
+      <a id="modalEditLink" href="#" class="btn-cancel" style="text-decoration:none">{% trans "Edit in Admin" %}</a>
+      <button class="btn-save" onclick="saveTicket()">{% trans "Save" %}</button>
     </div>
   </div>
 </div>
 
+{# i18n strings exposed to JS #}
+<script id="board-i18n" type="application/json">
+{
+  "Ticket": "{% trans 'Ticket' %}",
+  "ErrorSaving": "{% trans 'Error saving:' %}",
+  "Unknown": "{% trans 'unknown' %}"
+}
+</script>
+
 <script>
+const T = JSON.parse(document.getElementById("board-i18n").textContent);
 // Priority filters
 const filterPills = Array.from(document.querySelectorAll("[data-priority], [data-show-overdue]"));
 let activePriority = "all";
@@ -323,8 +336,10 @@ let activeTicketId = null;
 
 function openTicket(card) {
   activeTicketId = card.dataset.ticket;
-  document.getElementById("modalTitle").textContent = `Ticket #${activeTicketId} — ${card.querySelector(".ticket-title").textContent.trim()}`;
+  document.getElementById("modalTitle").textContent = `${T.Ticket} #${activeTicketId} — ${card.querySelector(".ticket-title").textContent.trim()}`;
   document.getElementById("modalEditLink").href = `/admin/shop/workticket/${activeTicketId}/change/`;
+  document.getElementById("modalStatus").value = card.dataset.status || "pending";
+  document.getElementById("modalEmployee").value = "";
   document.getElementById("ticketModal").classList.remove("hidden");
 }
 
@@ -336,15 +351,17 @@ function closeModal() {
 function saveTicket() {
   const status = document.getElementById("modalStatus").value;
   const empId = document.getElementById("modalEmployee").value;
+  const payload = { status };
+  if (empId) payload.assigned_to_id = Number(empId);
   fetch(`/shop/api/ticket/${activeTicketId}/status/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-CSRFToken": getCookie("csrftoken") },
-    body: JSON.stringify({ status, assigned_to_id: empId || null }),
+    body: JSON.stringify(payload),
   })
     .then(r => r.json())
     .then(data => {
       if (data.ok) { closeModal(); location.reload(); }
-      else alert("Error saving: " + (data.error || "unknown"));
+      else alert(T.ErrorSaving + " " + (data.error || T.Unknown));
     });
 }
 

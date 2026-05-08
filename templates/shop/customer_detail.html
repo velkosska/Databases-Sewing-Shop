@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ customer.full_name }} — Customer History</title>
+<title>{{ customer.full_name }} — {% trans "Customer History" %}</title>
 <style>
 :root {
   --bg: #f4f7fb; --panel: #fff; --border: #dbe3ec; --brand: #1e2840;
@@ -64,11 +64,11 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
 <body>
 
 <div class="header">
-  <h1>Customer: {{ customer.full_name }}</h1>
+  <h1>{% trans "Customer:" %} {{ customer.full_name }}</h1>
   <div style="display:flex;gap:.5rem;">
-    <a href="/" class="btn">← Dashboard</a>
-    <a href="/admin/shop/customer/{{ customer.pk }}/change/" class="btn">Edit in Admin</a>
-    <a href="/orders/new/" class="btn" style="background:var(--success);border-color:var(--success)">+ New Order</a>
+    <a href="/" class="btn">← {% trans "Dashboard" %}</a>
+    <a href="/admin/shop/customer/{{ customer.pk }}/change/" class="btn">{% trans "Edit in Admin" %}</a>
+    <a href="/orders/new/" class="btn" style="background:var(--success);border-color:var(--success)">+ {% trans "New Order" %}</a>
   </div>
 </div>
 
@@ -85,7 +85,7 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
         {% if customer.phone %}<span>📞 {{ customer.phone }}</span>{% endif %}
         {% if customer.email %}<span>✉ {{ customer.email }}</span>{% endif %}
         {% if customer.address %}<span>📍 {{ customer.address }}</span>{% endif %}
-        <span>🗓 Customer since {{ customer.created_at }}</span>
+        <span>🗓 {% blocktrans with date=customer.created_at %}Customer since {{ date }}{% endblocktrans %}</span>
       </div>
       {% if customer.notes %}
       <div style="margin-top:.6rem; font-size:.83rem; color:var(--muted);">{{ customer.notes }}</div>
@@ -96,23 +96,23 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
   <!-- Stats -->
   <div class="stats-row">
     <div class="stat-card">
-      <div class="label">Total Orders</div>
+      <div class="label">{% trans "Total Orders" %}</div>
       <div class="value">{{ order_count }}</div>
     </div>
     <div class="stat-card">
-      <div class="label">Total Spent</div>
+      <div class="label">{% trans "Total Spent" %}</div>
       <div class="value">${{ total_spent|floatformat:2 }}</div>
     </div>
     <div class="stat-card">
-      <div class="label">Active Orders</div>
+      <div class="label">{% trans "Active Orders" %}</div>
       <div class="value" style="color:var(--info)">
         {{ orders|length }}
       </div>
     </div>
     <div class="stat-card">
-      <div class="label">Has Measurements</div>
+      <div class="label">{% trans "Has Measurements" %}</div>
       <div class="value" style="color:{% if latest_measurement %}var(--success){% else %}var(--muted){% endif %}">
-        {% if latest_measurement %}Yes{% else %}No{% endif %}
+        {% if latest_measurement %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}
       </div>
     </div>
   </div>
@@ -122,7 +122,7 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
     <!-- Orders -->
     <div>
       <div class="card">
-        <h3>🗂 Order History</h3>
+        <h3>🗂 {% trans "Order History" %}</h3>
         {% if orders %}
           {% for order in orders %}
           <div class="order-row">
@@ -134,19 +134,19 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
             </div>
             <div class="order-row-meta">
               <span>📅 {{ order.order_date }}</span>
-              {% if order.due_date %}<span>⏰ Due: {{ order.due_date }}</span>{% endif %}
+              {% if order.due_date %}<span>⏰ {% trans "Due:" %} {{ order.due_date }}</span>{% endif %}
               {% if order.total_price %}<span>💰 ${{ order.total_price|floatformat:2 }}</span>{% endif %}
             </div>
             <div class="order-row-items">
               {% for item in order.items.all|slice:":5" %}
-              <span class="item-chip">{{ item.garment_type|default:item.catalogue_item.name|default:"Item" }}</span>
+              <span class="item-chip">{{ item.garment_type|default:item.catalogue_item.name|default:_("Item") }}</span>
               {% endfor %}
-              {% if order.items.count > 5 %}<span class="item-chip">+{{ order.items.count|add:"-5" }} more</span>{% endif %}
+              {% if order.items.count > 5 %}<span class="item-chip">+{{ order.items.count|add:"-5" }} {% trans "more" %}</span>{% endif %}
             </div>
           </div>
           {% endfor %}
         {% else %}
-          <p style="color:var(--muted);text-align:center;padding:1.5rem 0;">No orders yet.</p>
+          <p style="color:var(--muted);text-align:center;padding:1.5rem 0;">{% trans "No orders yet." %}</p>
         {% endif %}
       </div>
     </div>
@@ -154,30 +154,30 @@ body { margin: 0; font-family: Inter, -apple-system, Arial, sans-serif; backgrou
     <!-- Measurements & Notes -->
     <div>
       <div class="card">
-        <h3>📏 Latest Measurements</h3>
+        <h3>📏 {% trans "Latest Measurements" %}</h3>
         {% if latest_measurement %}
-        <div style="font-size:.76rem;color:var(--muted);margin-bottom:.6rem;">Recorded: {{ latest_measurement.created_at|date:"M d, Y" }}</div>
+        <div style="font-size:.76rem;color:var(--muted);margin-bottom:.6rem;">{% trans "Recorded:" %} {{ latest_measurement.created_at|date:"DATE_FORMAT" }}</div>
         <div class="meas-grid">
-          {% if latest_measurement.bust %}<div class="meas-row"><span class="field">Bust</span><span class="val">{{ latest_measurement.bust }} cm</span></div>{% endif %}
-          {% if latest_measurement.waist %}<div class="meas-row"><span class="field">Waist</span><span class="val">{{ latest_measurement.waist }} cm</span></div>{% endif %}
-          {% if latest_measurement.hips %}<div class="meas-row"><span class="field">Hips</span><span class="val">{{ latest_measurement.hips }} cm</span></div>{% endif %}
-          {% if latest_measurement.shoulder %}<div class="meas-row"><span class="field">Shoulder</span><span class="val">{{ latest_measurement.shoulder }} cm</span></div>{% endif %}
-          {% if latest_measurement.sleeve %}<div class="meas-row"><span class="field">Sleeve</span><span class="val">{{ latest_measurement.sleeve }} cm</span></div>{% endif %}
-          {% if latest_measurement.length %}<div class="meas-row"><span class="field">Length</span><span class="val">{{ latest_measurement.length }} cm</span></div>{% endif %}
-          {% if latest_measurement.inseam %}<div class="meas-row"><span class="field">Inseam</span><span class="val">{{ latest_measurement.inseam }} cm</span></div>{% endif %}
-          {% if latest_measurement.neck %}<div class="meas-row"><span class="field">Neck</span><span class="val">{{ latest_measurement.neck }} cm</span></div>{% endif %}
+          {% if latest_measurement.bust %}<div class="meas-row"><span class="field">{% trans "Bust" %}</span><span class="val">{{ latest_measurement.bust }} cm</span></div>{% endif %}
+          {% if latest_measurement.waist %}<div class="meas-row"><span class="field">{% trans "Waist" %}</span><span class="val">{{ latest_measurement.waist }} cm</span></div>{% endif %}
+          {% if latest_measurement.hips %}<div class="meas-row"><span class="field">{% trans "Hips" %}</span><span class="val">{{ latest_measurement.hips }} cm</span></div>{% endif %}
+          {% if latest_measurement.shoulder %}<div class="meas-row"><span class="field">{% trans "Shoulder" %}</span><span class="val">{{ latest_measurement.shoulder }} cm</span></div>{% endif %}
+          {% if latest_measurement.sleeve %}<div class="meas-row"><span class="field">{% trans "Sleeve" %}</span><span class="val">{{ latest_measurement.sleeve }} cm</span></div>{% endif %}
+          {% if latest_measurement.length %}<div class="meas-row"><span class="field">{% trans "Length" %}</span><span class="val">{{ latest_measurement.length }} cm</span></div>{% endif %}
+          {% if latest_measurement.inseam %}<div class="meas-row"><span class="field">{% trans "Inseam" %}</span><span class="val">{{ latest_measurement.inseam }} cm</span></div>{% endif %}
+          {% if latest_measurement.neck %}<div class="meas-row"><span class="field">{% trans "Neck" %}</span><span class="val">{{ latest_measurement.neck }} cm</span></div>{% endif %}
         </div>
         {% if latest_measurement.notes %}
         <div style="margin-top:.6rem;font-size:.8rem;color:var(--muted);">{{ latest_measurement.notes }}</div>
         {% endif %}
         {% else %}
-        <p style="color:var(--muted);font-size:.85rem;">No measurements recorded yet. They will be saved when creating an order.</p>
+        <p style="color:var(--muted);font-size:.85rem;">{% trans "No measurements recorded yet. They will be saved when creating an order." %}</p>
         {% endif %}
       </div>
 
       {% if customer.notes %}
       <div class="card">
-        <h3>📝 Customer Notes</h3>
+        <h3>📝 {% trans "Customer Notes" %}</h3>
         <div class="notes-box">{{ customer.notes }}</div>
       </div>
       {% endif %}

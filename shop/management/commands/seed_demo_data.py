@@ -18,6 +18,7 @@ from shop.models import (
     ProductionStage,
     WorkTicket,
 )
+from shop.production_logging import pause_order_production_logs
 
 
 class Command(BaseCommand):
@@ -35,14 +36,25 @@ class Command(BaseCommand):
             default=80,
             help="How many orders to generate (default: 80).",
         )
+        parser.add_argument(
+            "--extra-customers",
+            type=int,
+            default=30,
+            help="How many synthetic customers to ensure in total generation set (default: 30).",
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
+        with pause_order_production_logs():
+            self._seed_body(options)
+
+    def _seed_body(self, options):
         if options["reset"]:
             self._reset_data()
 
         today = date.today()
         total_orders = max(20, options["orders"])
+        synthetic_customers = max(20, options["extra_customers"])
 
         first_names = [
             "Maria", "Carlos", "Ana", "Pedro", "Laura", "Lucia", "Jorge", "Sofia", "Miguel", "Elena",
@@ -53,7 +65,7 @@ class Command(BaseCommand):
             "Navarro", "Ortega", "Castro", "Molina", "Suarez", "Gil", "Iglesias", "Benitez", "Prieto", "Calvo",
         ]
         customers = []
-        for idx in range(30):
+        for idx in range(synthetic_customers):
             first_name = first_names[idx % len(first_names)]
             last_name = last_names[(idx * 3) % len(last_names)]
             customers.append(
@@ -101,17 +113,43 @@ class Command(BaseCommand):
                 defaults={"role": role, "notes": "Seeded employee"},
             )
 
+        # Expanded catalogue set for richer demos and reporting.
         catalogue_items = [
             ("Wedding Dress Tailoring", Decimal("350.00")),
             ("Formal Suit Tailoring", Decimal("280.00")),
             ("Summer Dress Sewing", Decimal("90.00")),
             ("Trousers Tailoring", Decimal("110.00")),
             ("Bridesmaid Dress Sewing", Decimal("180.00")),
+            ("Evening Gown Tailoring", Decimal("320.00")),
+            ("Office Blazer Tailoring", Decimal("220.00")),
+            ("School Uniform Set", Decimal("160.00")),
+            ("Custom Shirt Tailoring", Decimal("95.00")),
+            ("Traditional Dress Sewing", Decimal("260.00")),
+            ("Coat Alteration", Decimal("85.00")),
+            ("Jeans Alteration", Decimal("45.00")),
+            ("Skirt Alteration", Decimal("40.00")),
+            ("Jacket Repair", Decimal("55.00")),
+            ("Curtain Sewing Service", Decimal("130.00")),
         ]
         catalogues = {}
         for service, base_price in catalogue_items:
             obj, _ = Catalogue.objects.get_or_create(service=service, defaults={"base_price": base_price})
             catalogues[service] = obj
+
+        # Backfill measurements for all existing customers, including pre-seeded/manual records.
+        for idx, customer in enumerate(Customer.objects.order_by("id")):
+            Measurement.objects.get_or_create(
+                customer=customer,
+                defaults={
+                    "chest": Decimal("88.00") + Decimal(idx % 12),
+                    "waist": Decimal("68.00") + Decimal(idx % 10),
+                    "hip": Decimal("92.00") + Decimal(idx % 11),
+                    "shoulder": Decimal("38.00") + Decimal(idx % 6),
+                    "sleeve_length": Decimal("58.00") + Decimal(idx % 7),
+                    "inseam": Decimal("75.00") + Decimal(idx % 8),
+                    "notes": "Auto-generated baseline measurements",
+                },
+            )
 
         materials = [
             ("Premium Denim", "Blue", Decimal("12.50"), Decimal("45.50")),
@@ -143,6 +181,10 @@ class Command(BaseCommand):
             ("Blazer", "Black", Decimal("210.00"), "Slim fit"),
             ("Skirt", "Green", Decimal("125.00"), "Pleated style"),
             ("Shirt", "White", Decimal("90.00"), "French cuffs"),
+            ("Evening Gown", "Burgundy", Decimal("340.00"), "Open back, beaded waist"),
+            ("School Uniform", "Navy", Decimal("165.00"), "2 shirts + 2 trousers"),
+            ("Custom Jacket", "Charcoal", Decimal("245.00"), "Water-resistant lining"),
+            ("Curtain Set", "Ivory", Decimal("145.00"), "Living room 2-panel set"),
         ]
 
         priority_cycle = [

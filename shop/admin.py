@@ -1,7 +1,9 @@
 from decimal import Decimal
+import json
 
 from django.contrib import admin, messages
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, DecimalField, ExpressionWrapper, F, Q, Sum, Value
+from django.db.models.functions import Coalesce, Greatest
 from django.http import HttpResponseRedirect
 from django.utils.html import format_html, mark_safe
 from django.utils import timezone
@@ -9,6 +11,8 @@ from django.utils.translation import gettext_lazy as _, ngettext
 from unfold.admin import ModelAdmin, StackedInline, TabularInline
 
 from .forms import OrderAdminForm, OrderItemInlineForm
+from .payment_sync import sync_order_payment_totals
+from .production_logging import format_order_production_log_summary
 from .models import (
     Catalogue,
     CatalogueItem,
@@ -21,6 +25,8 @@ from .models import (
     OrderItem,
     OrderItemMaterial,
     OrderItemMeasurement,
+    OrderPayment,
+    OrderProductionLog,
     ProductionStage,
     WorkTicket,
 )
@@ -60,6 +66,38 @@ _ITEM_STATUS = {
 }
 
 
+class BalanceDueFilter(admin.SimpleListFilter):
+    title = _("Balance due")
+    parameter_name = "balance_filter"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("owed", _("Has balance owed")),
+            ("open", _("Outstanding (not delivered)")),
+            ("clear", _("Paid up")),
+        )
+
+    def queryset(self, request, queryset):
+        v = self.value()
+        zero = Value(0, output_field=DecimalField(max_digits=12, decimal_places=2))
+        due = Greatest(
+            ExpressionWrapper(
+                Coalesce(F("total_price"), zero) - Coalesce(F("deposit_paid"), zero),
+                output_field=DecimalField(max_digits=14, decimal_places=4),
+            ),
+            zero,
+            output_field=DecimalField(max_digits=14, decimal_places=4),
+        )
+        queryset = queryset.annotate(_due=due)
+        if v == "owed":
+            return queryset.filter(_due__gt=0)
+        if v == "open":
+            return queryset.filter(_due__gt=0).exclude(status=Order.Status.DELIVERED)
+        if v == "clear":
+            return queryset.filter(_due__lte=0)
+        return queryset
+
+
 # ─── Inlines ────────────────────────────────────────────────────────────────
 
 class OrderItemMaterialInline(TabularInline):
@@ -93,6 +131,17 @@ class OrderItemInline(TabularInline):
     verbose_name_plural = _("Order items")
 
 
+class OrderPaymentInline(TabularInline):
+    model = OrderPayment
+    extra = 1
+    fields = ("recorded_at", "amount", "method", "notes")
+    verbose_name = _("Payment")
+    verbose_name_plural = _("Payment history")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by("-recorded_at")
+
+
 class ProductionStageInline(TabularInline):
     model = ProductionStage
     extra = 1
@@ -106,11 +155,37 @@ class DeliveryInline(StackedInline):
     fields = ["delivery_method", "recipient_name", "delivered_at", "delivered", "comments"]
 
 
+class OrderProductionLogInline(TabularInline):
+    model = OrderProductionLog
+    extra = 0
+    max_num = 0
+    can_delete = False
+    fields = ("created_at", "summary_display")
+    readonly_fields = ("created_at", "summary_display")
+    verbose_name = _("Production event")
+    verbose_name_plural = _("Production log")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by("-created_at")
+
+    @admin.display(description=_("What happened"))
+    def summary_display(self, obj):
+        return format_order_production_log_summary(obj)
+
+
 # ─── Admin Actions ───────────────────────────────────────────────────────────
 
 @admin.action(description=_("Mark selected orders as In Production"))
 def mark_in_production(modeladmin, request, queryset):
-    updated = queryset.exclude(status=Order.Status.DELIVERED).update(status=Order.Status.IN_PRODUCTION)
+    updated = 0
+    for order in queryset.exclude(status=Order.Status.DELIVERED):
+        if order.status != Order.Status.IN_PRODUCTION:
+            order.status = Order.Status.IN_PRODUCTION
+            order.save(update_fields=["status"])
+            updated += 1
     messages.success(request, ngettext(
         "%(count)d order marked as In Production.",
         "%(count)d orders marked as In Production.",
@@ -120,7 +195,12 @@ def mark_in_production(modeladmin, request, queryset):
 
 @admin.action(description=_("Mark selected orders as Completed"))
 def mark_completed(modeladmin, request, queryset):
-    updated = queryset.update(status=Order.Status.COMPLETED)
+    updated = 0
+    for order in queryset:
+        if order.status != Order.Status.COMPLETED:
+            order.status = Order.Status.COMPLETED
+            order.save(update_fields=["status"])
+            updated += 1
     messages.success(request, ngettext(
         "%(count)d order marked as Completed.",
         "%(count)d orders marked as Completed.",
@@ -132,14 +212,47 @@ def mark_completed(modeladmin, request, queryset):
 def mark_delivered(modeladmin, request, queryset):
     now = timezone.now()
     count = 0
-    for order in queryset:
+    for order in queryset.select_related("customer"):
+        order.refresh_from_db()
+        tp = order.total_price or Decimal("0")
+        qp = OrderPayment.objects.filter(order_id=order.pk)
+        if qp.exists():
+            paid_agg = qp.aggregate(s=Sum("amount"))["s"]
+            paid = paid_agg.quantize(Decimal("0.01")) if paid_agg is not None else Decimal("0")
+        else:
+            paid = (order.deposit_paid or Decimal("0")).quantize(Decimal("0.01"))
+
+        balance = (tp - paid).quantize(Decimal("0.01"))
+        if balance > Decimal("0"):
+            OrderPayment.objects.create(
+                order=order,
+                amount=balance,
+                method=OrderPayment.Method.ADMIN_MARK_DELIVERED,
+                notes=str(_("Captured on mark delivered (admin)")),
+            )
+
         order.status = Order.Status.DELIVERED
         order.payment_status = Order.PaymentStatus.PAID
         order.save(update_fields=["status", "payment_status"])
-        Delivery.objects.update_or_create(
+        delivery, created = Delivery.objects.get_or_create(
             order=order,
-            defaults={"delivered": True, "delivered_at": now, "recipient_name": order.customer.full_name},
+            defaults={
+                "delivered": True,
+                "delivered_at": now,
+                "recipient_name": order.customer.full_name,
+                "delivery_method": Delivery.Method.PICKUP,
+            },
         )
+        if not created:
+            delivery.delivered = True
+            delivery.delivered_at = now
+            if not delivery.recipient_name:
+                delivery.recipient_name = order.customer.full_name
+            if not delivery.delivery_method:
+                delivery.delivery_method = Delivery.Method.PICKUP
+            delivery.save(update_fields=[
+                "delivered", "delivered_at", "recipient_name", "delivery_method",
+            ])
         count += 1
     messages.success(request, ngettext(
         "%(count)d order marked as Delivered.",
@@ -150,12 +263,18 @@ def mark_delivered(modeladmin, request, queryset):
 
 @admin.action(description=_("Mark selected work tickets as In Progress"))
 def ticket_in_progress(modeladmin, request, queryset):
-    queryset.update(status=WorkTicket.Status.IN_PROGRESS)
+    for ticket in queryset:
+        if ticket.status != WorkTicket.Status.IN_PROGRESS:
+            ticket.status = WorkTicket.Status.IN_PROGRESS
+            ticket.save(update_fields=["status"])
 
 
 @admin.action(description=_("Mark selected work tickets as Done"))
 def ticket_done(modeladmin, request, queryset):
-    queryset.update(status=WorkTicket.Status.DONE)
+    for ticket in queryset:
+        if ticket.status != WorkTicket.Status.DONE:
+            ticket.status = WorkTicket.Status.DONE
+            ticket.save(update_fields=["status"])
 
 
 # ─── Customer ────────────────────────────────────────────────────────────────
@@ -274,27 +393,49 @@ class OrderAdmin(ModelAdmin):
     form = OrderAdminForm
     list_display = [
         "order_id", "customer_link", "garment_summary",
-        "order_date_display", "due_date_display", "status_badge", "payment_badge", "total_display",
+        "order_date_display", "due_date_display", "status_badge", "payment_badge",
+        "total_display", "balance_due_display",
     ]
-    search_fields = ["customer__first_name", "customer__last_name", "id"]
-    list_filter = ["status", "payment_status", "order_date", "due_date"]
+    search_fields = ["customer__first_name", "customer__last_name"]
+    list_filter = ["status", "payment_status", "order_date", "due_date", BalanceDueFilter]
     ordering = ["-order_date"]
     autocomplete_fields = ["customer"]
     actions = [mark_in_production, mark_completed, mark_delivered]
-    inlines = [OrderItemInline, DeliveryInline]
+    inlines = [OrderItemInline, OrderPaymentInline, DeliveryInline, OrderProductionLogInline]
     fieldsets = (
         (_("Order Information"), {
             "fields": ("customer", ("due_date", "status"), "notes"),
         }),
         (_("Pricing & Payment"), {
             "fields": (("total_price", "deposit_paid"), "payment_status"),
-            "description": _("Total price auto-calculates from items. Deposit is recorded at intake."),
+            "description": _(
+                "Total price is usually the sum of line items. When payment history lines exist, "
+                "paid total and payment status are recalculated from those lines."
+            ),
         }),
     )
 
-    class Media:
-        js = ("shop/admin/order_flow.js",)
-        css = {"all": ("shop/admin/order_flow.css",)}
+    def get_readonly_fields(self, request, obj=None):
+        ro = list(super().get_readonly_fields(request, obj))
+        if obj is not None and obj.payments.exists():
+            for f in ("deposit_paid", "payment_status"):
+                if f not in ro:
+                    ro.append(f)
+        return ro
+
+    def get_search_results(self, request, queryset, search_term):
+        """Numeric terms match primary key (avoid id__icontains on integer FK)."""
+        queryset, duplicates = super().get_search_results(request, queryset, search_term)
+        if search_term:
+            stripped = search_term.strip()
+            if stripped.isdigit():
+                try:
+                    queryset = queryset | self.model.objects.filter(pk=int(stripped))
+                    duplicates = True
+                except (ValueError, TypeError):
+                    pass
+            return queryset.distinct(), duplicates
+        return queryset, duplicates
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -381,6 +522,15 @@ class OrderAdmin(ModelAdmin):
             return mark_safe('<span style="color:#9ca3af">—</span>')
         return format_html("<strong>${}</strong>", obj.total_price)
 
+    @admin.display(description=_("Balance due"))
+    def balance_due_display(self, obj):
+        if obj.total_price is None:
+            return mark_safe('<span style="color:#9ca3af">—</span>')
+        d = obj.balance_due
+        if d <= 0:
+            return mark_safe('<span style="color:#16a34a;font-weight:600">$0</span>')
+        return format_html('<span style="color:#b45309;font-weight:600">${}</span>', d)
+
     def add_view(self, request, form_url="", extra_context=None):
         """Send the admin user to the polished Next.js wizard instead of the raw form."""
         return HttpResponseRedirect("http://localhost:3000/orders/new?from=admin")
@@ -393,6 +543,57 @@ class OrderAdmin(ModelAdmin):
         if order.total_price is None:
             order.total_price = computed
             order.save(update_fields=["total_price"])
+        sync_order_payment_totals(order.pk)
+
+
+@admin.register(OrderPayment)
+class OrderPaymentAdmin(ModelAdmin):
+    list_display = [
+        "recorded_at",
+        "order_link",
+        "customer_display",
+        "amount_display",
+        "method_display",
+        "balance_hint",
+        "notes",
+    ]
+    list_filter = ["method", "recorded_at"]
+    search_fields = [
+        "notes",
+        "order__customer__first_name",
+        "order__customer__last_name",
+        "order__pk",
+    ]
+    autocomplete_fields = ["order"]
+    ordering = ["-recorded_at"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("order__customer")
+
+    @admin.display(description=_("Order"))
+    def order_link(self, obj):
+        url = f"/admin/shop/order/{obj.order_id}/change/"
+        return format_html('<a href="{}">#{}</a>', url, obj.order_id)
+
+    @admin.display(description=_("Customer"))
+    def customer_display(self, obj):
+        return obj.order.customer.full_name
+
+    @admin.display(description=_("Amount"))
+    def amount_display(self, obj):
+        return format_html("<strong>${}</strong>", obj.amount)
+
+    @admin.display(description=_("Method"))
+    def method_display(self, obj):
+        return dict(OrderPayment.Method.choices).get(obj.method, obj.method)
+
+    @admin.display(description=_("Remaining on order"))
+    def balance_hint(self, obj):
+        o = obj.order
+        remain = o.balance_due if o.pk else Decimal("0")
+        if remain <= 0:
+            return format_html('<span style="color:#16a34a;font-weight:600">$0 · {}</span>', _("Paid up"))
+        return format_html('<span style="color:#b45309;font-weight:600">${} {}</span>', remain, _("owed"))
 
 
 # ─── Order Item ───────────────────────────────────────────────────────────────
@@ -589,3 +790,51 @@ class DeliveryAdmin(ModelAdmin):
                 '<span style="color:#16a34a; font-weight:600">✓ {}</span>', _("Delivered")
             )
         return format_html('<span style="color:#9ca3af">{}</span>', _("Pending"))
+
+
+# ─── Production log (read-only timeline) ───────────────────────────────────────
+
+@admin.register(OrderProductionLog)
+class OrderProductionLogAdmin(ModelAdmin):
+    list_display = ["created_at", "order_link", "kind_display", "summary_short"]
+    list_filter = ["kind", "created_at"]
+    search_fields = [
+        "order__id",
+        "order__customer__first_name",
+        "order__customer__last_name",
+    ]
+    ordering = ["-created_at"]
+    readonly_fields = ("created_at", "order", "kind", "payload_display", "summary_short")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("order__customer")
+
+    @admin.display(description=_("Order"))
+    def order_link(self, obj):
+        url = f"/admin/shop/order/{obj.order_id}/change/"
+        return format_html(
+            '<a href="{}">#{} — {}</a>',
+            url,
+            obj.order_id,
+            obj.order.customer.full_name,
+        )
+
+    @admin.display(description=_("Kind"))
+    def kind_display(self, obj):
+        label = dict(OrderProductionLog.Kind.choices).get(obj.kind, obj.kind)
+        return str(label)
+
+    @admin.display(description=_("Payload"))
+    def payload_display(self, obj):
+        text = json.dumps(obj.payload or {}, indent=2, sort_keys=True, ensure_ascii=True)
+        return format_html('<pre style="margin:0;white-space:pre-wrap;font-size:12px">{}</pre>', text)
+
+    @admin.display(description=_("Summary"))
+    def summary_short(self, obj):
+        return format_order_production_log_summary(obj)

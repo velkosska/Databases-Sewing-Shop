@@ -32,6 +32,16 @@ const NAV_DEFS: { href: string; labelKey: TKey; external?: boolean; icon: React.
     ),
   },
   {
+    href: "/deliveries",
+    labelKey: "nav_deliveries",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 17V6h5l3 5v6h-2m-14 0H4V9l3-5h9" />
+      </svg>
+    ),
+  },
+  {
     href: "http://127.0.0.1:8000/admin/",
     labelKey: "nav_admin",
     external: true,

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — Sewing Shop</title>
+<title>{% trans "Dashboard" %} — {% trans "Sewing Shop" %}</title>
 <style>
 :root {
   --bg: #f4f7fb;
@@ -152,50 +152,50 @@ tbody tr:hover { background: #f5f8ff; }
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <h1>Sewing Shop <span class="live-badge">Live</span></h1>
-      <div class="sub">Last updated: {{ last_updated }}</div>
+      <h1>{% trans "Sewing Shop" %} <span class="live-badge">{% trans "Live" %}</span></h1>
+      <div class="sub">{% trans "Last updated:" %} {{ last_updated }}</div>
     </div>
     <div class="header-right">
-      <a href="/production/" class="btn">🧵 Production Board</a>
-      <a href="/admin/" class="btn">⚙ Admin Panel</a>
-      <a href="/orders/new/" class="btn success">+ New Order</a>
+      <a href="/production/" class="btn">🧵 {% trans "Production Board" %}</a>
+      <a href="/admin/" class="btn">⚙ {% trans "Admin Panel" %}</a>
+      <a href="/orders/new/" class="btn success">+ {% trans "New Order" %}</a>
     </div>
   </div>
 
   <!-- Nav tabs -->
   <div class="nav-tabs">
-    <span class="nav-tab active" data-filter="all">All Orders</span>
-    <span class="nav-tab" data-filter="pending">Pending</span>
-    <span class="nav-tab" data-filter="in_production">In Production</span>
-    <span class="nav-tab overdue-tab" data-filter="overdue">⚠ Overdue{% if overdue_orders %} ({{ overdue_orders }}){% endif %}</span>
-    <span class="nav-tab" data-filter="completed">Completed</span>
-    <span class="nav-tab" data-filter="delivered">Delivered</span>
+    <span class="nav-tab active" data-filter="all">{% trans "All Orders" %}</span>
+    <span class="nav-tab" data-filter="pending">{% trans "Pending" %}</span>
+    <span class="nav-tab" data-filter="in_production">{% trans "In Production" %}</span>
+    <span class="nav-tab overdue-tab" data-filter="overdue">⚠ {% trans "Overdue" %}{% if overdue_orders %} ({{ overdue_orders }}){% endif %}</span>
+    <span class="nav-tab" data-filter="completed">{% trans "Completed" %}</span>
+    <span class="nav-tab" data-filter="delivered">{% trans "Delivered" %}</span>
   </div>
 
   <!-- Status summary cards -->
   <div class="stat-grid">
     <div class="stat-card active" data-filter="all">
-      <div class="label">All Orders</div>
+      <div class="label">{% trans "All Orders" %}</div>
       <div class="value">{{ all_orders }}</div>
     </div>
     <div class="stat-card" data-filter="pending">
-      <div class="label">Pending</div>
+      <div class="label">{% trans "Pending" %}</div>
       <div class="value">{{ pending_orders }}</div>
     </div>
     <div class="stat-card" data-filter="in_production">
-      <div class="label">In Production</div>
+      <div class="label">{% trans "In Production" %}</div>
       <div class="value">{{ in_production_orders }}</div>
     </div>
     <div class="stat-card overdue" data-filter="overdue">
-      <div class="label">Overdue</div>
+      <div class="label">{% trans "Overdue" %}</div>
       <div class="value">{{ overdue_orders }}</div>
     </div>
     <div class="stat-card success-card" data-filter="completed">
-      <div class="label">Completed</div>
+      <div class="label">{% trans "Completed" %}</div>
       <div class="value">{{ completed_orders }}</div>
     </div>
     <div class="stat-card" data-filter="delivered">
-      <div class="label">Delivered</div>
+      <div class="label">{% trans "Delivered" %}</div>
       <div class="value">{{ delivered_orders }}</div>
     </div>
   </div>
@@ -203,19 +203,19 @@ tbody tr:hover { background: #f5f8ff; }
   <!-- Revenue row -->
   <div class="revenue-row">
     <div class="rev-card">
-      <div class="label">Total Revenue</div>
+      <div class="label">{% trans "Total Revenue" %}</div>
       <div class="value">${{ total_revenue|floatformat:2 }}</div>
-      <div class="sub">Across all orders</div>
+      <div class="sub">{% trans "Across all orders" %}</div>
     </div>
     <div class="rev-card">
-      <div class="label">Deposits Collected</div>
+      <div class="label">{% trans "Deposits Collected" %}</div>
       <div class="value">${{ total_deposit|floatformat:2 }}</div>
-      <div class="sub">Paid at intake</div>
+      <div class="sub">{% trans "Paid at intake" %}</div>
     </div>
     <div class="rev-card">
-      <div class="label">Balance Outstanding</div>
+      <div class="label">{% trans "Balance Outstanding" %}</div>
       <div class="value" style="color:var(--warning)">${{ balance_outstanding|floatformat:2 }}</div>
-      <div class="sub">Still to collect</div>
+      <div class="sub">{% trans "Still to collect" %}</div>
     </div>
   </div>
 
@@ -225,14 +225,14 @@ tbody tr:hover { background: #f5f8ff; }
     <div class="alert warn">
       <span>⚠</span>
       <div>
-        <strong>Low stock alert:</strong>
-        <span>{{ low_stock_materials.count }} material{{ low_stock_materials.count|pluralize }} below threshold.</span>
+        <strong>{% trans "Low stock alert:" %}</strong>
+        <span>{% blocktrans count counter=low_stock_materials.count %}{{ counter }} material below threshold.{% plural %}{{ counter }} materials below threshold.{% endblocktrans %}</span>
         <div class="low-stock-list">
           {% for m in low_stock_materials %}
-          <span class="low-stock-chip">{{ m.name }}{% if m.color %} ({{ m.color }}){% endif %} — {{ m.stock_quantity }} left</span>
+          <span class="low-stock-chip">{{ m.name }}{% if m.color %} ({{ m.color }}){% endif %} — {{ m.stock_quantity }} {% trans "left" %}</span>
           {% endfor %}
         </div>
-        <a href="/admin/shop/material/" style="margin-top:.3rem;display:inline-block;">→ Manage materials</a>
+        <a href="/admin/shop/material/" style="margin-top:.3rem;display:inline-block;">→ {% trans "Manage materials" %}</a>
       </div>
     </div>
   </div>
@@ -240,16 +240,16 @@ tbody tr:hover { background: #f5f8ff; }
 
   <!-- Toolbar -->
   <div class="toolbar">
-    <input id="searchInput" class="toolbar-input" type="text" placeholder="Search customer, garment, color…">
+    <input id="searchInput" class="toolbar-input" type="text" placeholder="{% trans 'Search customer, garment, color…' %}">
     <select id="sortSelect" class="toolbar-select">
-      <option value="newest">Newest first</option>
-      <option value="oldest">Oldest first</option>
-      <option value="due_asc">Due date ↑</option>
-      <option value="due_desc">Due date ↓</option>
+      <option value="newest">{% trans "Newest first" %}</option>
+      <option value="oldest">{% trans "Oldest first" %}</option>
+      <option value="due_asc">{% trans "Due date" %} ↑</option>
+      <option value="due_desc">{% trans "Due date" %} ↓</option>
     </select>
   </div>
   <div class="table-meta">
-    <span id="rowCount">Loading…</span>
+    <span id="rowCount">{% trans "Loading…" %}</span>
   </div>
 
   <!-- Table -->
@@ -257,24 +257,24 @@ tbody tr:hover { background: #f5f8ff; }
     <table>
       <thead>
         <tr>
-          <th class="sortable" data-sort="id">Order <span class="arrow">↕</span></th>
-          <th>Customer</th>
-          <th>Garment</th>
-          <th class="sortable" data-sort="order_date">Order date <span class="arrow">↕</span></th>
-          <th class="sortable" data-sort="due_date">Due date <span class="arrow">↕</span></th>
-          <th>Assigned to</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Payment</th>
-          <th>Total</th>
-          <th>Actions</th>
+          <th class="sortable" data-sort="id">{% trans "Order" %} <span class="arrow">↕</span></th>
+          <th>{% trans "Customer" %}</th>
+          <th>{% trans "Garment" %}</th>
+          <th class="sortable" data-sort="order_date">{% trans "Order date" %} <span class="arrow">↕</span></th>
+          <th class="sortable" data-sort="due_date">{% trans "Due date" %} <span class="arrow">↕</span></th>
+          <th>{% trans "Assigned to" %}</th>
+          <th>{% trans "Priority" %}</th>
+          <th>{% trans "Status" %}</th>
+          <th>{% trans "Payment" %}</th>
+          <th>{% trans "Total" %}</th>
+          <th>{% trans "Actions" %}</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
-    <div id="emptyState" class="empty" style="display:none">No orders match the current filters.</div>
+    <div id="emptyState" class="empty" style="display:none">{% trans "No orders match the current filters." %}</div>
     <div id="loadMoreWrap" class="load-more-wrap" style="display:none">
-      <button id="loadMoreBtn" class="load-more-btn">Load more</button>
+      <button id="loadMoreBtn" class="load-more-btn">{% trans "Load more" %}</button>
     </div>
   </div>
 
@@ -282,7 +282,36 @@ tbody tr:hover { background: #f5f8ff; }
 
 {{ table_rows|json_script:"dashboard-data" }}
 
+{# i18n strings exposed to JS so JS-rendered cells follow the active language #}
+<script id="dashboard-i18n" type="application/json">
+{
+  "showing": "{% trans 'Showing' %}",
+  "of": "{% trans 'of' %}",
+  "orders": "{% trans 'orders' %}",
+  "Pending": "{% trans 'Pending' %}",
+  "InProduction": "{% trans 'In Production' %}",
+  "Completed": "{% trans 'Completed' %}",
+  "Delivered": "{% trans 'Delivered' %}",
+  "Cancelled": "{% trans 'Cancelled' %}",
+  "Overdue": "{% trans 'Overdue' %}",
+  "Unpaid": "{% trans 'Unpaid' %}",
+  "Deposit": "{% trans 'Deposit' %}",
+  "Paid": "{% trans 'Paid' %}",
+  "Edit": "{% trans 'Edit' %}",
+  "EditOrder": "{% trans 'Edit order' %}",
+  "CustomerHistory": "{% trans 'Customer history' %}",
+  "DueIn": "{% trans 'Due in' %}",
+  "DOverdue": "{% trans 'd overdue' %}",
+  "D": "{% trans 'd' %}",
+  "Urgent": "{% trans 'Urgent' %}",
+  "High": "{% trans 'High' %}",
+  "Normal": "{% trans 'Normal' %}",
+  "Low": "{% trans 'Low' %}",
+  "Unassigned": "{% trans 'Unassigned' %}"
+}
+</script>
 <script>
+const T = JSON.parse(document.getElementById("dashboard-i18n").textContent);
 const rows = JSON.parse(document.getElementById("dashboard-data").textContent);
 const tableBody = document.getElementById("tableBody");
 const emptyState = document.getElementById("emptyState");
@@ -331,16 +360,31 @@ function computeUrgency(row) {
 
 function displayStatus(row, overdueDays) {
   const ns = normalizeStatus(row.status);
-  if (overdueDays !== null && !["completed", "delivered"].includes(ns)) return { label: "Overdue", cls: "s-overdue" };
-  const map = { pending: ["Pending", "s-pending"], in_production: ["In Production", "s-in-production"], completed: ["Completed", "s-completed"], delivered: ["Delivered", "s-delivered"], cancelled: ["Cancelled", "s-cancelled"] };
+  if (overdueDays !== null && !["completed", "delivered"].includes(ns)) return { label: T.Overdue, cls: "s-overdue" };
+  const map = {
+    pending:       [T.Pending,       "s-pending"],
+    in_production: [T.InProduction,  "s-in-production"],
+    completed:     [T.Completed,     "s-completed"],
+    delivered:     [T.Delivered,     "s-delivered"],
+    cancelled:     [T.Cancelled,     "s-cancelled"],
+  };
   const [label, cls] = map[ns] || [ns, "s-cancelled"];
   return { label, cls };
 }
 
 function paymentBadge(status) {
-  const map = { unpaid: ["Unpaid", "pay-unpaid"], deposit: ["Deposit", "pay-deposit"], paid: ["Paid", "pay-paid"] };
+  const map = {
+    unpaid:  [T.Unpaid,  "pay-unpaid"],
+    deposit: [T.Deposit, "pay-deposit"],
+    paid:    [T.Paid,    "pay-paid"],
+  };
   const [label, cls] = map[status] || ["—", "s-cancelled"];
   return { label, cls };
+}
+
+function priorityLabel(p) {
+  const map = { urgent: T.Urgent, high: T.High, normal: T.Normal, low: T.Low };
+  return map[p] || p;
 }
 
 function normalizeDate(v) { return v ? new Date(v).getTime() : 0; }
@@ -371,7 +415,7 @@ function renderTable() {
   if (isLoading) return renderSkeleton();
   const filtered = applyFilters();
   const shown = filtered.slice(0, visibleRows);
-  rowCount.textContent = `Showing ${shown.length} of ${filtered.length} orders`;
+  rowCount.textContent = `${T.showing} ${shown.length} ${T.of} ${filtered.length} ${T.orders}`;
   if (!filtered.length) { tableBody.innerHTML = ""; emptyState.style.display = "block"; loadMoreWrap.style.display = "none"; return; }
   emptyState.style.display = "none";
   loadMoreWrap.style.display = filtered.length > shown.length ? "block" : "none";
@@ -382,21 +426,24 @@ function renderTable() {
     const py = paymentBadge(row.payment_status);
     const dueDateText = row.due_date || "—";
     const dueLine = urgency.overdueDays !== null
-      ? `<span class="subline danger">${urgency.overdueDays}d overdue</span>`
+      ? `<span class="subline danger">${urgency.overdueDays}${T.D} ${T.DOverdue}</span>`
       : urgency.dueInDays !== null
-        ? `<span class="subline warning">Due in ${urgency.dueInDays}d</span>`
+        ? `<span class="subline warning">${T.DueIn} ${urgency.dueInDays}${T.D}</span>`
         : "";
     const pClass = normalizePriority(row.priority);
+    const pLabel = priorityLabel(pClass);
     const color = row.color || "—";
     const total = row.total_price ? `$${parseFloat(row.total_price).toFixed(2)}` : "—";
     const initials = (row.customer_initials || "?");
+    const isUnassigned = row.assigned_to === "Unassigned" || row.assigned_to === T.Unassigned;
+    const assignedLabel = isUnassigned ? T.Unassigned : row.assigned_to;
 
     return `<tr>
       <td style="font-size:.8rem;color:var(--muted)">#${row.id}</td>
       <td>
         <div class="customer-cell">
           <span class="avatar" style="background:${nameToColor(row.customer_name)}">${initials}</span>
-          <a href="/customers/${row.customer_id}/" title="Customer history">${row.customer_name}</a>
+          <a href="/customers/${row.customer_id}/" title="${T.CustomerHistory}">${row.customer_name}</a>
         </div>
       </td>
       <td>
@@ -408,13 +455,13 @@ function renderTable() {
       </td>
       <td>${row.order_date || "—"}</td>
       <td>${dueDateText}${dueLine}</td>
-      <td style="color:${row.assigned_to === 'Unassigned' ? 'var(--muted)' : 'inherit'}">${row.assigned_to}</td>
-      <td><span class="dot ${pClass}"></span>${pClass}</td>
+      <td style="color:${isUnassigned ? 'var(--muted)' : 'inherit'}">${assignedLabel}</td>
+      <td><span class="dot ${pClass}"></span>${pLabel}</td>
       <td><span class="badge ${st.cls}">${st.label}</span></td>
       <td><span class="badge ${py.cls}">${py.label}</span></td>
       <td style="font-weight:600">${total}</td>
       <td style="white-space:nowrap">
-        <a class="view-btn" href="/admin/shop/order/${row.id}/change/" title="Edit order">Edit</a>
+        <a class="view-btn" href="/admin/shop/order/${row.id}/change/" title="${T.EditOrder}">${T.Edit}</a>
       </td>
     </tr>`;
   }).join("");
