@@ -1,5 +1,5 @@
-// Server-side: call Django directly. Client-side: use Next.js rewrites (/api/*).
-const SERVER_BASE = "http://127.0.0.1:8000";
+// Server-side: call Django directly (uses DJANGO_INTERNAL_URL in production). Client-side: use Next.js rewrites (/api/*).
+const SERVER_BASE = process.env.DJANGO_INTERNAL_URL ?? "http://127.0.0.1:8000";
 const CLIENT_BASE = "";
 
 function base() {
