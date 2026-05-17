@@ -6,6 +6,7 @@ import {
   LineChart, Line, CartesianGrid,
 } from "recharts";
 import { DashboardData, OrderRow } from "@/lib/api";
+import { DJANGO_URL } from "@/lib/django";
 import { useI18n } from "@/lib/i18n";
 
 const STATUS_TAB_KEYS = [
@@ -274,7 +275,7 @@ export function DashboardClient({ data }: { data: DashboardData }) {
             {low_stock.map(m => (
               <a
                 key={m.id}
-                href={`http://127.0.0.1:8000/admin/shop/material/${m.id}/change/`}
+                href={`${DJANGO_URL}/admin/shop/material/${m.id}/change/`}
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
               >
@@ -443,7 +444,7 @@ export function DashboardClient({ data }: { data: DashboardData }) {
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                           <a
-                            href={`http://127.0.0.1:8000/admin/shop/order/${order.id}/change/`}
+                            href={`${DJANGO_URL}/admin/shop/order/${order.id}/change/`}
                             target="_blank" rel="noopener noreferrer"
                             onClick={e => e.stopPropagation()}
                             className="p-1.5 rounded-lg hover:bg-[#f3ebff] hover:text-[#8324FF] text-[#848484] transition-colors"

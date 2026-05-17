@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n, TKey } from "@/lib/i18n";
+import { DJANGO_URL } from "@/lib/django";
 
 const NAV_DEFS: { href: string; labelKey: TKey; external?: boolean; icon: React.ReactNode }[] = [
   {
@@ -42,7 +43,7 @@ const NAV_DEFS: { href: string; labelKey: TKey; external?: boolean; icon: React.
     ),
   },
   {
-    href: "http://127.0.0.1:8000/admin/",
+    href: `${DJANGO_URL}/admin/`,
     labelKey: "nav_admin",
     external: true,
     icon: (
@@ -56,7 +57,7 @@ const NAV_DEFS: { href: string; labelKey: TKey; external?: boolean; icon: React.
 
 const BOTTOM_DEFS: { href: string; labelKey: TKey; external?: boolean; icon: React.ReactNode }[] = [
   {
-    href: "http://127.0.0.1:8000/admin/",
+    href: `${DJANGO_URL}/admin/`,
     labelKey: "nav_settings",
     external: true,
     icon: (

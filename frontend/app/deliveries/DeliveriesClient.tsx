@@ -1,5 +1,6 @@
 "use client";
 import { DeliveryRow } from "@/lib/api";
+import { DJANGO_URL } from "@/lib/django";
 import { useI18n } from "@/lib/i18n";
 
 // Fixed locale + IANA TZ so SSR (Node) and client match; default aligns with Django TIME_ZONE (Europe/Madrid).
@@ -76,7 +77,7 @@ export function DeliveriesClient({ deliveries }: { deliveries: DeliveryRow[] }) 
                     <td className="px-4 py-3.5 text-[#848484] whitespace-nowrap">{fmtDt(d.delivered_at)}</td>
                     <td className="px-4 py-3.5 text-right">
                       <a
-                        href={`http://127.0.0.1:8000/admin/shop/delivery/${d.id}/change/`}
+                        href={`${DJANGO_URL}/admin/shop/delivery/${d.id}/change/`}
                         target="_blank" rel="noopener noreferrer"
                         className="text-xs font-semibold text-[#8324FF] hover:underline"
                       >

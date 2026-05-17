@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { CatalogueItem, Customer, Employee, Material } from "@/lib/api";
+import { DJANGO_URL } from "@/lib/django";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -214,7 +215,7 @@ export function OrderWizardClient({ catalogue, employees, customers, materials, 
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed to create order."); setSubmitting(false); return; }
       if (fromAdmin) {
-        window.location.href = "http://127.0.0.1:8000/admin/shop/order/";
+        window.location.href = `${DJANGO_URL}/admin/shop/order/`;
       } else {
         router.push("/");
       }
@@ -236,7 +237,7 @@ export function OrderWizardClient({ catalogue, employees, customers, materials, 
           <p className="text-slate-400 text-xs mt-0.5">{t("wiz_subtitle")}</p>
           {fromAdmin && (
             <a
-              href="http://127.0.0.1:8000/admin/shop/order/"
+              href={`${DJANGO_URL}/admin/shop/order/`}
               className="mt-2 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">

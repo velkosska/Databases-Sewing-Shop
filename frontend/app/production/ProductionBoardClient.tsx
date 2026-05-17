@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { clsx } from "clsx";
 import { BoardData, TicketCard } from "@/lib/api";
+import { DJANGO_URL } from "@/lib/django";
 import { useI18n } from "@/lib/i18n";
 
 const PRIORITY_DOT: Record<string, string> = {
@@ -236,7 +237,7 @@ export function ProductionBoardClient({ data }: { data: BoardData }) {
             </div>
 
             <a
-              href={`http://127.0.0.1:8000/admin/shop/workticket/${selected.id}/change/`}
+              href={`${DJANGO_URL}/admin/shop/workticket/${selected.id}/change/`}
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full text-center text-xs text-[#848484] hover:text-[#8324FF] transition-colors mt-1"
