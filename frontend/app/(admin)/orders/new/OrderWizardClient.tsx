@@ -216,7 +216,7 @@ export function OrderWizardClient({ catalogue, employees, customers, materials, 
       if (fromAdmin) {
         window.location.href = "http://127.0.0.1:8000/admin/shop/order/";
       } else {
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch (e) {
       setError("Network error. Is the Django server running?");

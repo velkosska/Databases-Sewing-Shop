@@ -1,0 +1,195 @@
+/* Costuras de Paqui — clean landing (LlamaFly-inspired layout, Paqui branding) */
+
+.landing-root {
+  --landing-bg: #ffffff;
+  --landing-surface: #f8f5f1;
+  --landing-cream: #faf7f2;
+  --landing-cream-dark: #f0ebe3;
+  --landing-ink: #1f1c1a;
+  --landing-muted: #6b6560;
+  --landing-accent: #9b6bb8;
+  --landing-accent-soft: #f3ebf8;
+  --landing-accent-deep: #7a4f96;
+  --landing-rose: #c98598;
+  --landing-border: #e8e2da;
+  scroll-behavior: smooth;
+  background: var(--landing-bg);
+  color: var(--landing-ink);
+}
+
+/* Navbar */
+.landing-navbar {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+}
+.landing-navbar--scrolled {
+  border-bottom-color: var(--landing-border);
+}
+
+/* Hero */
+.landing-hero {
+  background: linear-gradient(180deg, var(--landing-cream) 0%, var(--landing-bg) 100%);
+}
+.landing-hero-content {
+  animation: landing-fade-in 0.8s ease-out both;
+}
+.landing-hero-visual {
+  background: var(--landing-cream-dark);
+  border: 1px solid var(--landing-border);
+  box-shadow: 0 24px 48px -12px rgba(122, 79, 150, 0.12);
+}
+
+.landing-order-card {
+  background: white;
+  border: 1px solid var(--landing-border);
+  border-radius: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 16px 40px -8px rgba(31, 28, 26, 0.08);
+}
+
+.landing-chip {
+  background: var(--landing-surface);
+  color: var(--landing-ink);
+  border: 1px solid var(--landing-border);
+  transition: background 0.15s, border-color 0.15s;
+}
+.landing-chip:hover {
+  background: var(--landing-accent-soft);
+  border-color: var(--landing-accent);
+  color: var(--landing-accent-deep);
+}
+
+@keyframes landing-fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cards */
+.landing-feature-card {
+  background: white;
+  border: 1px solid var(--landing-border);
+  border-radius: 1rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.landing-feature-card:hover {
+  box-shadow: 0 12px 32px -8px rgba(31, 28, 26, 0.08);
+}
+
+.landing-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--landing-surface);
+  border: 1px dashed var(--landing-border);
+}
+
+/* Sections */
+.landing-section {
+  padding: 4rem 0;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.landing-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.landing-section--compact {
+  padding: 2rem 0 3rem;
+}
+.landing-section--alt {
+  background: var(--landing-surface);
+}
+
+.landing-cta-band {
+  background: var(--landing-cream);
+  border-top: 1px solid var(--landing-border);
+  border-bottom: 1px solid var(--landing-border);
+}
+
+/* Buttons — min 48px */
+.landing-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  cursor: pointer;
+  border: none;
+}
+.landing-btn:active { transform: scale(0.98); }
+.landing-btn--primary {
+  background: var(--landing-accent-deep);
+  color: white;
+  box-shadow: 0 4px 14px rgba(122, 79, 150, 0.25);
+}
+.landing-btn--primary:hover { background: var(--landing-accent); }
+.landing-btn--outline {
+  background: white;
+  color: var(--landing-ink);
+  border: 1px solid var(--landing-border);
+}
+.landing-btn--outline:hover {
+  border-color: var(--landing-accent);
+  background: var(--landing-accent-soft);
+}
+.landing-btn--whatsapp {
+  background: #25d366;
+  color: white;
+}
+.landing-btn--whatsapp:hover { background: #1fb855; }
+.landing-btn--ghost {
+  background: transparent;
+  color: var(--landing-ink);
+  border: 1px solid var(--landing-border);
+}
+
+.landing-input {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--landing-border);
+  background: white;
+  font-size: 0.9375rem;
+  color: var(--landing-ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.landing-input:focus {
+  outline: none;
+  border-color: var(--landing-accent);
+  box-shadow: 0 0 0 3px rgba(155, 107, 184, 0.15);
+}
+textarea.landing-input {
+  min-height: auto;
+}
+.landing-btn--light {
+  background: white;
+  color: var(--landing-accent-deep);
+}
+
+.landing-whatsapp-float {
+  animation: landing-float-pulse 3s ease-in-out infinite;
+}
+@keyframes landing-float-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35); }
+  50% { box-shadow: 0 6px 28px rgba(37, 211, 102, 0.5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero-content,
+  .landing-section,
+  .landing-whatsapp-float {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}

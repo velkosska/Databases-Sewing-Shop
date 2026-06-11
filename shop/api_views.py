@@ -271,6 +271,12 @@ def api_create_order(request):
     order_notes = body.get("order_notes", "").strip()
     internal_notes = body.get("internal_notes", "").strip()
     measurements_payload = body.get("measurements", {})
+    order_source = body.get("source", "staff")
+
+    if order_source == "web":
+        internal_notes = "\n".join(
+            filter(None, [internal_notes, "[Pedido web — pendiente de confirmación por Paqui]"])
+        )
 
     with transaction.atomic():
         summary_lines = [
@@ -291,22 +297,35 @@ def api_create_order(request):
         )
 
         subtotal = Decimal("0.00")
+        items_created = 0
         for item_data in items_payload:
-            source = item_data.get("catalogue_source", "catalogue_item")
+            item_cat_source = item_data.get("catalogue_source", "catalogue_item")
             catalogue_item_obj = None
             legacy_catalogue = None
-            if source == "catalogue_legacy":
+            requires_measurements = bool(item_data.get("requires_measurements", False))
+            catalogue_name = (
+                item_data.get("garment_type")
+                or item_data.get("service_type")
+                or "Pedido web"
+            )
+
+            if item_cat_source == "catalogue_legacy":
                 legacy_catalogue = Catalogue.objects.filter(pk=item_data.get("catalogue_item_id")).first()
                 if not legacy_catalogue:
-                    continue
-                catalogue_name = legacy_catalogue.service
-                requires_measurements = True
+                    if order_source != "web":
+                        continue
+                else:
+                    catalogue_name = legacy_catalogue.service
+                    requires_measurements = True
             else:
-                catalogue_item_obj = CatalogueItem.objects.filter(pk=item_data.get("catalogue_item_id")).first()
-                if not catalogue_item_obj:
+                cat_id = item_data.get("catalogue_item_id")
+                if cat_id:
+                    catalogue_item_obj = CatalogueItem.objects.filter(pk=cat_id).first()
+                if catalogue_item_obj:
+                    catalogue_name = catalogue_item_obj.name
+                    requires_measurements = catalogue_item_obj.requires_measurements
+                elif order_source != "web":
                     continue
-                catalogue_name = catalogue_item_obj.name
-                requires_measurements = catalogue_item_obj.requires_measurements
 
             quantity = max(int(item_data.get("quantity", 1)), 1)
             unit_price = Decimal(str(item_data.get("unit_price", "0")))
@@ -353,6 +372,11 @@ def api_create_order(request):
                 deadline=due_date,
             )
             subtotal += line_total
+            items_created += 1
+
+        if items_created == 0:
+            transaction.set_rollback(True)
+            return JsonResponse({"error": "At least one valid item is required"}, status=400)
 
         order.total_price = subtotal
         order.save(update_fields=["total_price"])

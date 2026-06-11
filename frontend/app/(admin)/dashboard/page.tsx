@@ -1,4 +1,4 @@
-import { api, DashboardData, DjangoOfflineError } from "@/lib/api";
+import { api, DashboardData, isBackendUnavailable } from "@/lib/api";
 import { Navbar } from "@/components/ui/Navbar";
 import { DashboardClient } from "./DashboardClient";
 import OfflineError from "@/components/ui/OfflineError";
@@ -10,7 +10,11 @@ export default async function DashboardPage() {
   try {
     data = await api.get<DashboardData>("/dashboard/");
   } catch (err) {
-    if (err instanceof DjangoOfflineError) return <OfflineError />;
+    if (isBackendUnavailable(err)) {
+      return (
+        <OfflineError message="No se pudo cargar el panel. Comprueba que Django y la base de datos están en marcha en Railway (variables DB_* y migrate)." />
+      );
+    }
     throw err;
   }
   return (

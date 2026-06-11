@@ -29,28 +29,27 @@ export default function OfflineError({ message }: Props) {
         </h1>
 
         <p className="text-sm text-neutral-500 mb-6 leading-relaxed">
-          {message ?? "The Django development server is not running or is unreachable."}
+          {message ??
+            "The Django server is not running, the database is misconfigured, or migrations have not been applied."}
         </p>
 
-        <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 text-left mb-6">
-          <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">
-            Start both servers
-          </p>
-          <code className="block text-xs text-neutral-800 font-mono leading-6">
-            # Terminal 1 — Django<br />
-            cd sewing_shop_project<br />
-            source venv/bin/activate<br />
-            python manage.py runserver<br />
-            <br />
-            # Terminal 2 — Next.js<br />
-            cd sewing_shop_project/frontend<br />
-            npm run dev
-          </code>
-        </div>
+        {!message && (
+          <>
+            <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 text-left mb-6">
+              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">
+                Local development
+              </p>
+              <code className="block text-xs text-neutral-800 font-mono leading-6">
+                ./start.sh
+              </code>
+            </div>
 
-        <p className="text-xs text-neutral-400">
-          Or use <code className="font-mono">./start.sh</code> to start both at once.
-        </p>
+            <p className="text-xs text-neutral-400">
+              On Railway: check backend logs, run <code className="font-mono">migrate</code>, set{" "}
+              <code className="font-mono">DJANGO_API_URL</code> on the frontend service.
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

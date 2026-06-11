@@ -1,12 +1,16 @@
 import type { NextConfig } from "next";
 
+const djangoApiOrigin =
+  process.env.DJANGO_API_URL?.replace(/\/$/, "") ||
+  process.env.API_URL?.replace(/\/$/, "") ||
+  "http://127.0.0.1:8000";
+
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        // Proxy only the JSON API — admin is opened directly on :8000
         source: "/api/:path*",
-        destination: "http://127.0.0.1:8000/api/:path*",
+        destination: `${djangoApiOrigin}/api/:path*`,
       },
     ];
   },

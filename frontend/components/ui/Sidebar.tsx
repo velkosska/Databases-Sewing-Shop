@@ -5,7 +5,7 @@ import { useI18n, TKey } from "@/lib/i18n";
 
 const NAV_DEFS: { href: string; labelKey: TKey; external?: boolean; icon: React.ReactNode }[] = [
   {
-    href: "/",
+    href: "/dashboard",
     labelKey: "nav_dashboard",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-5 h-5">
@@ -73,7 +73,7 @@ export function Sidebar() {
   const { t } = useI18n();
 
   function isActive(href: string) {
-    if (href === "/") return path === "/";
+    if (href === "/dashboard") return path === "/dashboard";
     return path.startsWith(href);
   }
 

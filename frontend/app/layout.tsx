@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/ui/Sidebar";
-import { I18nProvider } from "@/lib/i18n";
+import "./landing.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,22 +9,24 @@ const inter = Inter({
   display: "swap",
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Sewing Shop",
-  description: "Order tracking, production, and customer management.",
+  title: {
+    default: "Costuras de Paqui",
+    template: "%s — Costuras de Paqui",
+  },
+  description: "Arreglos y confecciones en Madrid.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-screen bg-[#F2F2F2]">
-        <I18nProvider>
-          <Sidebar />
-          <div className="ml-[72px] min-h-screen flex flex-col">
-            {children}
-          </div>
-        </I18nProvider>
-      </body>
+    <html lang="es" className={`${inter.variable} ${playfair.variable}`}>
+      <body className="min-h-screen antialiased">{children}</body>
     </html>
   );
 }

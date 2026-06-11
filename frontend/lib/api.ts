@@ -1,5 +1,8 @@
-// Server-side: call Django directly. Client-side: use Next.js rewrites (/api/*).
-const SERVER_BASE = "http://127.0.0.1:8000";
+// Server-side: Django URL (Railway: set DJANGO_API_URL). Client-side: same-origin /api rewrite.
+const SERVER_BASE =
+  process.env.DJANGO_API_URL?.replace(/\/$/, "") ||
+  process.env.API_URL?.replace(/\/$/, "") ||
+  "http://127.0.0.1:8000";
 const CLIENT_BASE = "";
 
 function base() {
@@ -18,6 +21,13 @@ export class DjangoOfflineError extends Error {
     super("Django server is not running. Start it with: python manage.py runserver");
     this.name = "DjangoOfflineError";
   }
+}
+
+/** True when admin pages should show OfflineError instead of crashing SSR. */
+export function isBackendUnavailable(err: unknown): boolean {
+  if (err instanceof DjangoOfflineError) return true;
+  if (err instanceof ApiError && err.status >= 500) return true;
+  return false;
 }
 
 // Strip trailing slash so server-side and client-side (proxy) paths are identical
