@@ -1,3 +1,0 @@
-# Railway / Nixpacks — libs to compile mysqlclient (pip install stays on Nixpacks default)
-[phases.setup]
-aptPkgs = ["default-libmysqlclient-dev", "pkg-config", "build-essential"]
