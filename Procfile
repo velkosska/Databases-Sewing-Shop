@@ -1,1 +1,1 @@
-web: bash scripts/railway_start.sh
+web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --log-file - --access-logfile -
