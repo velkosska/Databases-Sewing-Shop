@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import OfflineError from "@/components/ui/OfflineError";
+import { adminUrl } from "@/lib/django";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
                 Dashboard
               </Link>
               <a
-                href={`${process.env.NEXT_PUBLIC_DJANGO_URL ?? "http://127.0.0.1:8000"}/admin/shop/customer/${customer.id}/change/`}
+                href={adminUrl(`shop/customer/${customer.id}/change/`)}
                 target="_blank" rel="noopener noreferrer"
                 className="rounded-xl border border-[#e5e7eb] bg-white px-3.5 py-2 text-sm font-semibold text-[#848484] hover:border-[#8324FF] hover:text-[#8324FF] transition-colors"
               >
@@ -110,7 +111,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
               <div key={order.id} className="rounded-2xl border border-[#e5e7eb] bg-white p-4 hover:border-[#8324FF]/30 hover:shadow-sm transition-all">
                 <div className="flex items-center justify-between mb-2">
                   <a
-                    href={`${process.env.NEXT_PUBLIC_DJANGO_URL ?? "http://127.0.0.1:8000"}/admin/shop/order/${order.id}/change/`}
+                    href={adminUrl(`shop/order/${order.id}/change/`)}
                     target="_blank" rel="noopener noreferrer"
                     className="font-bold text-[#111827] hover:text-[#8324FF] transition-colors text-sm"
                   >

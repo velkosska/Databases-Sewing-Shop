@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import { DashboardData, OrderRow } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import { adminUrl } from "@/lib/django";
 
 const STATUS_TAB_KEYS = [
   { key: "all",           labelKey: "tab_all"           },
@@ -274,7 +275,7 @@ export function DashboardClient({ data }: { data: DashboardData }) {
             {low_stock.map(m => (
               <a
                 key={m.id}
-                href={`${process.env.NEXT_PUBLIC_DJANGO_URL ?? "http://127.0.0.1:8000"}/admin/shop/material/${m.id}/change/`}
+                href={adminUrl(`shop/material/${m.id}/change/`)}
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
               >
@@ -443,7 +444,7 @@ export function DashboardClient({ data }: { data: DashboardData }) {
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                           <a
-                            href={`${process.env.NEXT_PUBLIC_DJANGO_URL ?? "http://127.0.0.1:8000"}/admin/shop/order/${order.id}/change/`}
+                            href={adminUrl(`shop/order/${order.id}/change/`)}
                             target="_blank" rel="noopener noreferrer"
                             onClick={e => e.stopPropagation()}
                             className="p-1.5 rounded-lg hover:bg-[#f3ebff] hover:text-[#8324FF] text-[#848484] transition-colors"
