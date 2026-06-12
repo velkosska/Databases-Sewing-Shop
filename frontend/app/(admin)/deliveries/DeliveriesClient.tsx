@@ -76,7 +76,7 @@ export function DeliveriesClient({ deliveries }: { deliveries: DeliveryRow[] }) 
                     <td className="px-4 py-3.5 text-[#848484] whitespace-nowrap">{fmtDt(d.delivered_at)}</td>
                     <td className="px-4 py-3.5 text-right">
                       <a
-                        href={`http://127.0.0.1:8000/admin/shop/delivery/${d.id}/change/`}
+                        href={`${process.env.NEXT_PUBLIC_DJANGO_URL ?? "http://127.0.0.1:8000"}/admin/shop/delivery/${d.id}/change/`}
                         target="_blank" rel="noopener noreferrer"
                         className="text-xs font-semibold text-[#8324FF] hover:underline"
                       >
