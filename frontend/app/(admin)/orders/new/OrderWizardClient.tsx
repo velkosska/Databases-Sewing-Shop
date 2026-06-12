@@ -67,9 +67,10 @@ function emptyItem(): OrderItem {
   };
 }
 
-export function OrderWizardClient({ catalogue, employees, customers, materials, fromAdmin }: Props) {
+export function OrderWizardClient({ catalogue: initialCatalogue, employees, customers, materials, fromAdmin }: Props) {
   const router = useRouter();
   const { t } = useI18n();
+  const [catalogue, setCatalogue] = useState(initialCatalogue);
   const [step, setStep] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<typeof customers[0] | null>(null);
   const [isNewCustomer, setIsNewCustomer] = useState(false);
@@ -101,6 +102,17 @@ export function OrderWizardClient({ catalogue, employees, customers, materials, 
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // Refetch catalogue client-side if SSR returned empty (e.g. before first seed deploy)
+  useEffect(() => {
+    if (catalogue.length > 0) return;
+    fetch("/api/catalogue", { headers: { Accept: "application/json" } })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (data?.catalogue?.length) setCatalogue(data.catalogue);
+      })
+      .catch(() => {});
+  }, [catalogue.length]);
 
   const filteredCustomers = customers.filter(c => {
     const q = customerSearch.toLowerCase();
@@ -458,6 +470,11 @@ export function OrderWizardClient({ catalogue, employees, customers, materials, 
           {/* ── Step 2: Items ── */}
           {step === 2 && (
             <div className="space-y-4">
+              {catalogue.length === 0 && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {t("s2_no_catalogue")}
+                </div>
+              )}
               {items.map((item, idx) => {
                 const cat = catalogue.find(c => String(c.id) === item.catalogue_item_id);
                 const types = cat ? (cat.garment_types.length > 0 ? cat.garment_types : [cat.name]) : [];

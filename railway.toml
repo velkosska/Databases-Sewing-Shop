@@ -2,4 +2,4 @@
 builder = "nixpacks"
 
 [deploy]
-releaseCommand = "python manage.py migrate --noinput"
+releaseCommand = "python manage.py migrate --noinput && python manage.py seed_catalogue"
