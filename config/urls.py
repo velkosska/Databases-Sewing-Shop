@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import include, path
 from django.utils import translation
 
@@ -54,6 +54,7 @@ def set_lang(request, lang_code):
 
 
 urlpatterns = [
+    path("health/", lambda _request: JsonResponse({"status": "ok"}), name="health"),
     path("i18n/<str:lang_code>/", set_lang, name="set_lang"),
     path("api/", include(api_patterns)),
     path("", include("shop.urls")),
