@@ -2,7 +2,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
-from urllib.parse import unquote, urlparse
 import os
 
 load_dotenv()
@@ -50,6 +49,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',   # must be after SessionMiddleware
@@ -87,58 +87,24 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # ============================================================
-#  DATABASE — MySQL
+#  DATABASE — PostgreSQL (Supabase via DATABASE_URL)
 # ============================================================
 
-def _env(*keys: str, default: str | None = None) -> str | None:
-    for key in keys:
-        value = os.getenv(key)
-        if value:
-            return value
-    return default
+import dj_database_url  # noqa: E402
 
+_database_url = os.getenv("DATABASE_URL")
 
-def _mysql_config() -> dict[str, str]:
-    url = _env("MYSQL_URL", "MYSQL_PRIVATE_URL", "DATABASE_URL")
-    if url and url.startswith(("mysql://", "mysql2://")):
-        parsed = urlparse(url)
-        return {
-            "NAME": parsed.path.lstrip("/") or "sewing_shop",
-            "USER": unquote(parsed.username or ""),
-            "PASSWORD": unquote(parsed.password or ""),
-            "HOST": parsed.hostname or "localhost",
-            "PORT": str(parsed.port or 3306),
-        }
-
-    return {
-        "NAME": _env("DB_NAME", "MYSQLDATABASE", "MYSQL_DATABASE", default="sewing_shop"),
-        "USER": _env("DB_USER", "MYSQLUSER", "MYSQL_USER", default="sewing_user"),
-        "PASSWORD": _env("DB_PASSWORD", "MYSQLPASSWORD", "MYSQL_PASSWORD", default="Sewing@1234"),
-        "HOST": _env("DB_HOST", "MYSQLHOST", "MYSQL_HOST", default="localhost"),
-        "PORT": _env("DB_PORT", "MYSQLPORT", "MYSQL_PORT", default="3306"),
-    }
-
-
-_mysql = _mysql_config()
-
-if not DEBUG and _mysql["HOST"] in ("localhost", "127.0.0.1"):
+if not DEBUG and not _database_url:
     raise ImproperlyConfigured(
-        "MySQL host is localhost in production. On Railway: Django service → Variables → "
-        "reference MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE from the MySQL service."
+        "Set DATABASE_URL to your Supabase Postgres URI (Project Settings → Database → Connection string, URI mode). "
+        "Use the pooler URL and append ?sslmode=require if needed."
     )
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME':     _mysql["NAME"],
-        'USER':     _mysql["USER"],
-        'PASSWORD': _mysql["PASSWORD"],
-        'HOST':     _mysql["HOST"],
-        'PORT':     _mysql["PORT"],
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        },
-    }
+    'default': dj_database_url.config(
+        default=_database_url or "postgres://localhost/sewing_shop",
+        conn_max_age=600,
+    )
 }
 
 
@@ -180,6 +146,11 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -187,17 +158,25 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ============================================================
-#  CORS — Allow Next.js dev server + production frontend
+#  CORS — dev + production frontend (Railway / Supabase)
 # ============================================================
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(","):
+    origin = origin.strip()
+    if origin and origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(origin)
+
 _frontend_url = os.getenv("FRONTEND_URL", "").rstrip("/")
-if _frontend_url:
+if _frontend_url and _frontend_url not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(_frontend_url)
 
-CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
+_csrf_origins = [
+    o.strip() for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+]
+CSRF_TRUSTED_ORIGINS = _csrf_origins or list(CORS_ALLOWED_ORIGINS)
 CORS_ALLOW_CREDENTIALS = True
 
 

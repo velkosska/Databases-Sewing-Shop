@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   } catch (err) {
     if (isBackendUnavailable(err)) {
       return (
-        <OfflineError message="No se pudo cargar el panel. Comprueba que Django y la base de datos están en marcha en Railway (variables DB_* y migrate)." />
+        <OfflineError message="No se pudo cargar el panel. Comprueba que Django está en marcha en Railway, DATABASE_URL apunta a Supabase, y migrate se ha ejecutado." />
       );
     }
     throw err;

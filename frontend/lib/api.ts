@@ -1,6 +1,7 @@
-// Server-side: Django URL (Railway: set DJANGO_API_URL). Client-side: same-origin /api rewrite.
+// Server-side: Django URL (Railway: DJANGO_API_URL or DJANGO_INTERNAL_URL). Client: /api rewrite.
 const SERVER_BASE =
   process.env.DJANGO_API_URL?.replace(/\/$/, "") ||
+  process.env.DJANGO_INTERNAL_URL?.replace(/\/$/, "") ||
   process.env.API_URL?.replace(/\/$/, "") ||
   "http://127.0.0.1:8000";
 const CLIENT_BASE = "";

@@ -6,7 +6,7 @@
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Match config/settings.py defaults (override with env: DB_NAME, DB_USER, …)
+# Match config/settings.py — Supabase via DATABASE_URL, or legacy MySQL env vars
 export DB_NAME="${DB_NAME:-sewing_shop}"
 export DB_USER="${DB_USER:-sewing_user}"
 export DB_PASSWORD="${DB_PASSWORD:-Sewing@1234}"
@@ -53,8 +53,12 @@ echo "Starting Django backend on http://127.0.0.1:8000 ..."
 cd "$SCRIPT_DIR"
 source venv/bin/activate
 
-echo "Checking MySQL database..."
-bootstrap_mysql || true
+echo "Checking database..."
+if [ -n "${DATABASE_URL:-}" ]; then
+  echo "  Using DATABASE_URL (Supabase/Postgres)."
+else
+  bootstrap_mysql || true
+fi
 
 echo "Applying migrations..."
 python manage.py migrate --noinput

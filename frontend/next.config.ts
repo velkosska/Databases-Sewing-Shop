@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const djangoApiOrigin =
   process.env.DJANGO_API_URL?.replace(/\/$/, "") ||
+  process.env.DJANGO_INTERNAL_URL?.replace(/\/$/, "") ||
   process.env.API_URL?.replace(/\/$/, "") ||
   "http://127.0.0.1:8000";
 
