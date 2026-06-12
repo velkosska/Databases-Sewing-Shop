@@ -164,7 +164,9 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# Only add STATICFILES_DIRS entries that actually exist on disk (avoids collectstatic errors).
+_extra_static = BASE_DIR / 'static'
+STATICFILES_DIRS = [_extra_static] if _extra_static.is_dir() else []
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
