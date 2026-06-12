@@ -91,14 +91,32 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # ============================================================
 
 import dj_database_url  # noqa: E402
+from urllib.parse import quote_plus
 
-# Railway Postgres: prefer private URL between services (no egress, same project).
-_database_url = os.getenv("DATABASE_PRIVATE_URL") or os.getenv("DATABASE_URL")
+# Railway Postgres: private URL, DATABASE_URL reference, or PG* vars from linked service.
+def _resolve_database_url() -> str | None:
+    url = os.getenv("DATABASE_PRIVATE_URL") or os.getenv("DATABASE_URL")
+    if url:
+        return url
+    pg_host = os.getenv("PGHOST")
+    if not pg_host:
+        return None
+    pg_user = os.getenv("PGUSER") or os.getenv("POSTGRES_USER") or "postgres"
+    pg_pass = os.getenv("PGPASSWORD") or os.getenv("POSTGRES_PASSWORD") or ""
+    pg_port = os.getenv("PGPORT", "5432")
+    pg_db = os.getenv("PGDATABASE") or os.getenv("POSTGRES_DB") or "railway"
+    return (
+        f"postgresql://{quote_plus(pg_user)}:{quote_plus(pg_pass)}"
+        f"@{pg_host}:{pg_port}/{pg_db}"
+    )
+
+
+_database_url = _resolve_database_url()
 
 if not DEBUG and not _database_url:
     raise ImproperlyConfigured(
-        "No database configured. In Railway: add a PostgreSQL plugin, connect it to this service, "
-        "and reference DATABASE_URL (or DATABASE_PRIVATE_URL) from the Postgres service."
+        "No database configured. In Railway: connect PostgreSQL to this service and "
+        "reference DATABASE_URL (or PGHOST/PGUSER/PGPASSWORD) from the Postgres service."
     )
 
 DATABASES = {
