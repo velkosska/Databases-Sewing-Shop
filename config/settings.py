@@ -1,6 +1,8 @@
 from pathlib import Path
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
+from urllib.parse import unquote, urlparse
 import os
 
 load_dotenv()
@@ -88,14 +90,51 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #  DATABASE — MySQL
 # ============================================================
 
+def _env(*keys: str, default: str | None = None) -> str | None:
+    for key in keys:
+        value = os.getenv(key)
+        if value:
+            return value
+    return default
+
+
+def _mysql_config() -> dict[str, str]:
+    url = _env("MYSQL_URL", "MYSQL_PRIVATE_URL", "DATABASE_URL")
+    if url and url.startswith(("mysql://", "mysql2://")):
+        parsed = urlparse(url)
+        return {
+            "NAME": parsed.path.lstrip("/") or "sewing_shop",
+            "USER": unquote(parsed.username or ""),
+            "PASSWORD": unquote(parsed.password or ""),
+            "HOST": parsed.hostname or "localhost",
+            "PORT": str(parsed.port or 3306),
+        }
+
+    return {
+        "NAME": _env("DB_NAME", "MYSQLDATABASE", "MYSQL_DATABASE", default="sewing_shop"),
+        "USER": _env("DB_USER", "MYSQLUSER", "MYSQL_USER", default="sewing_user"),
+        "PASSWORD": _env("DB_PASSWORD", "MYSQLPASSWORD", "MYSQL_PASSWORD", default="Sewing@1234"),
+        "HOST": _env("DB_HOST", "MYSQLHOST", "MYSQL_HOST", default="localhost"),
+        "PORT": _env("DB_PORT", "MYSQLPORT", "MYSQL_PORT", default="3306"),
+    }
+
+
+_mysql = _mysql_config()
+
+if not DEBUG and _mysql["HOST"] in ("localhost", "127.0.0.1"):
+    raise ImproperlyConfigured(
+        "MySQL host is localhost in production. On Railway: Django service → Variables → "
+        "reference MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE from the MySQL service."
+    )
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':     os.getenv('DB_NAME')     or os.getenv('MYSQLDATABASE', 'sewing_shop'),
-        'USER':     os.getenv('DB_USER')     or os.getenv('MYSQLUSER', 'sewing_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD') or os.getenv('MYSQLPASSWORD', 'Sewing@1234'),
-        'HOST':     os.getenv('DB_HOST')     or os.getenv('MYSQLHOST', 'localhost'),
-        'PORT':     os.getenv('DB_PORT')     or os.getenv('MYSQLPORT', '3306'),
+        'NAME':     _mysql["NAME"],
+        'USER':     _mysql["USER"],
+        'PASSWORD': _mysql["PASSWORD"],
+        'HOST':     _mysql["HOST"],
+        'PORT':     _mysql["PORT"],
         'OPTIONS': {
             'charset': 'utf8mb4',
         },
