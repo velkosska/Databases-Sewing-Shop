@@ -3,3 +3,5 @@ builder = "nixpacks"
 
 [deploy]
 startCommand = "bash scripts/railway_start.sh"
+healthcheckPath = "/health/"
+healthcheckTimeout = 300

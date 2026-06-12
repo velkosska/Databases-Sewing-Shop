@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${PORT:?PORT must be set by Railway}"
+echo "=== Starting Django on PORT=${PORT:?PORT must be set by Railway} ==="
 
+echo "=== migrate ==="
 python manage.py migrate --noinput
+
+echo "=== collectstatic ==="
 python manage.py collectstatic --noinput
 
+echo "=== gunicorn ==="
 exec gunicorn config.wsgi:application \
   --bind "0.0.0.0:${PORT}" \
   --workers 2 \
