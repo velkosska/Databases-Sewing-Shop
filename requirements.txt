@@ -6,3 +6,4 @@ pillow==12.2.0
 python-dotenv==1.2.2
 sqlparse==0.5.5
 django-cors-headers==4.9.0
+gunicorn==23.0.0

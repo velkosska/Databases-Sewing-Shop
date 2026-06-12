@@ -1,0 +1,3 @@
+# Railway / Nixpacks — Next.js 16 requires Node 20+
+[phases.setup]
+nixPkgs = ["nodejs_20"]

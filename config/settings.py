@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-sewing-shop-change-this-in-production-2025")
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True").lower() in ("1", "true", "yes")
 
 ALLOWED_HOSTS = ['*']
 
@@ -84,11 +84,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':     os.getenv('DB_NAME',     'sewing_shop'),
-        'USER':     os.getenv('DB_USER',     'sewing_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'Sewing@1234'),
-        'HOST':     os.getenv('DB_HOST',     'localhost'),
-        'PORT':     os.getenv('DB_PORT',     '3306'),
+        'NAME':     os.getenv('DB_NAME')     or os.getenv('MYSQLDATABASE', 'sewing_shop'),
+        'USER':     os.getenv('DB_USER')     or os.getenv('MYSQLUSER', 'sewing_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD') or os.getenv('MYSQLPASSWORD', 'Sewing@1234'),
+        'HOST':     os.getenv('DB_HOST')     or os.getenv('MYSQLHOST', 'localhost'),
+        'PORT':     os.getenv('DB_PORT')     or os.getenv('MYSQLPORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
         },
@@ -141,12 +141,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ============================================================
-#  CORS — Allow Next.js dev server
+#  CORS — Allow Next.js dev server + production frontend
 # ============================================================
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+_frontend_url = os.getenv("FRONTEND_URL", "").rstrip("/")
+if _frontend_url:
+    CORS_ALLOWED_ORIGINS.append(_frontend_url)
+
+CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
 CORS_ALLOW_CREDENTIALS = True
 
 

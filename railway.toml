@@ -1,0 +1,5 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+releaseCommand = "python manage.py migrate --noinput"
