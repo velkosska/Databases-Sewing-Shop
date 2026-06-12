@@ -87,17 +87,18 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # ============================================================
-#  DATABASE — PostgreSQL (Supabase via DATABASE_URL)
+#  DATABASE — PostgreSQL (Railway DATABASE_URL)
 # ============================================================
 
 import dj_database_url  # noqa: E402
 
-_database_url = os.getenv("DATABASE_URL")
+# Railway Postgres: prefer private URL between services (no egress, same project).
+_database_url = os.getenv("DATABASE_PRIVATE_URL") or os.getenv("DATABASE_URL")
 
 if not DEBUG and not _database_url:
     raise ImproperlyConfigured(
-        "Set DATABASE_URL to your Supabase Postgres URI (Project Settings → Database → Connection string, URI mode). "
-        "Use the pooler URL and append ?sslmode=require if needed."
+        "No database configured. In Railway: add a PostgreSQL plugin, connect it to this service, "
+        "and reference DATABASE_URL (or DATABASE_PRIVATE_URL) from the Postgres service."
     )
 
 DATABASES = {
