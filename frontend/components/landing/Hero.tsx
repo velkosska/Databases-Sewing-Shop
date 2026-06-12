@@ -3,11 +3,11 @@
 import Image from "next/image";
 import { BUSINESS_NAME, HERO_SUBTITLE, TAGLINE } from "./constants";
 import { scrollToId } from "./scroll";
-import paquiHero from "@/app/(landing)/shop_large_Costuras_de_Paqui2.jpg";
+import paquiHero from "@/app/(landing)/paqui-hero.png";
 
 const NEED_OPTIONS = [
   { label: "Arreglo", target: "servicios" },
-  { label: "Confección", target: "servicios" },
+  { label: "Motoristas", target: "servicios" },
   { label: "Tintorería", target: "servicios" },
 ] as const;
 
@@ -23,7 +23,7 @@ export function Hero({ onOrderClick }: HeroProps) {
           {/* Copy */}
           <div className="landing-hero-content text-center lg:text-left">
             <p className="text-sm font-semibold uppercase tracking-widest text-[var(--landing-accent)]">
-              Arreglos y confecciones · Madrid
+              Arreglos y transformaciones · Madrid
             </p>
             <h1 className="mt-4 font-[family-name:var(--font-playfair)] text-4xl sm:text-5xl lg:text-6xl font-semibold text-[var(--landing-ink)] leading-[1.1]">
               Bienvenida a{" "}
@@ -61,7 +61,7 @@ export function Hero({ onOrderClick }: HeroProps) {
             </div>
           </div>
 
-          {/* Hero photo — Paqui at the stall */}
+          {/* Hero photo — taller */}
           <div className="relative">
             <div
               data-slot="hero-bg"
@@ -69,7 +69,7 @@ export function Hero({ onOrderClick }: HeroProps) {
             >
               <Image
                 src={paquiHero}
-                alt="Paqui en su puesto de Costuras de Paqui en el mercado de San Enrique, Madrid"
+                alt="Prenda en maniquí en el taller de Costuras de Paqui, Madrid"
                 fill
                 className="object-cover object-center"
                 sizes="(max-width: 1024px) 100vw, 560px"

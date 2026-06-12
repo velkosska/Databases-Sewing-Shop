@@ -9,7 +9,7 @@ const GALLERY_ITEMS = [
   "Antes y después — vestido transformado",
   "Detalle de costura a mano",
   "Prenda a medida terminada",
-  "Trabajo de confección en el taller",
+  "Trabajo de arreglo en el taller",
 ] as const;
 
 export function Gallery() {

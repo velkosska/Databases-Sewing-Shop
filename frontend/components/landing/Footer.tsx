@@ -8,6 +8,7 @@ import {
   OPENING_HOURS,
   PHONE_DISPLAY,
   PHONE_HREF,
+  TIKTOK_URL,
   WEBSITE_URL,
 } from "./constants";
 
@@ -63,6 +64,11 @@ export function LandingFooter() {
               <li>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--landing-accent-deep)]">
                   Instagram
+                </a>
+              </li>
+              <li>
+                <a href={TIKTOK_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--landing-accent-deep)]">
+                  TikTok
                 </a>
               </li>
               <li>

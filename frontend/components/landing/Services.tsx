@@ -19,7 +19,7 @@ export function Services() {
             Nuestros servicios
           </h2>
           <p className="mt-3 text-[var(--landing-muted)] max-w-2xl mx-auto">
-            Arreglos, confección, hogar, motoristas y tintorería — todo en un mismo taller de confianza.
+            Arreglos, bordados, hogar, motoristas y tintorería — todo en un mismo taller de confianza.
           </p>
         </header>
 

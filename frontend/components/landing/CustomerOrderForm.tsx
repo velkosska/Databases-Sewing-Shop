@@ -31,11 +31,19 @@ const MEAS_LABELS: Record<keyof CustomerMeasurements, string> = {
 };
 
 const SERVICES_NEED_MEASUREMENTS = new Set([
-  "Confección a medida",
-  "Cortinas",
-  "Ropa de hogar",
-  "Ropa de motoristas",
+  "Reducción de tallas",
+  "Modificación de ropa de hogar",
+  "Arreglo de prendas de motoristas",
 ]);
+
+function itemNeedsMeasurements(serviceType: string, catalogueItem?: CatalogueItem): boolean {
+  if (catalogueItem?.requires_measurements) return true;
+  return SERVICES_NEED_MEASUREMENTS.has(serviceType);
+}
+
+function hasMeasurementValues(meas: CustomerMeasurements): boolean {
+  return Object.entries(meas).some(([, v]) => v.trim() !== "");
+}
 
 function emptyItem(): CustomerOrderItem {
   return {
@@ -51,6 +59,26 @@ function emptyItem(): CustomerOrderItem {
 
 function emptyMeasurements(): CustomerMeasurements {
   return { bust: "", waist: "", hips: "", shoulder: "", sleeve: "", length: "", inseam: "", neck: "", notes: "" };
+}
+
+function InfoBubbleIcon() {
+  return (
+    <svg className="landing-info-bubble__icon" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function InfoBubble({ title, children }: { title?: string; children: React.ReactNode }) {
+  return (
+    <aside className="landing-info-bubble" role="note">
+      <InfoBubbleIcon />
+      <div>
+        {title && <p className="landing-info-bubble__title">{title}</p>}
+        {children}
+      </div>
+    </aside>
+  );
 }
 
 export function CustomerOrderForm() {
@@ -75,12 +103,20 @@ export function CustomerOrderForm() {
   const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "home_delivery">("pickup");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [measurements, setMeasurements] = useState<CustomerMeasurements>(emptyMeasurements());
+  const [showMeasurementsForm, setShowMeasurementsForm] = useState(false);
 
   useEffect(() => {
     fetchCatalogue().then(setCatalogue).catch(() => setCatalogue([]));
   }, []);
 
-  const needsMeasurements = items.some((it) => SERVICES_NEED_MEASUREMENTS.has(it.service_type));
+  useEffect(() => {
+    if (step !== 3) setShowMeasurementsForm(false);
+  }, [step]);
+
+  const needsMeasurements = items.some((it) => {
+    const cat = catalogue.find((c) => String(c.id) === it.catalogue_item_id);
+    return itemNeedsMeasurements(it.service_type, cat);
+  });
 
   function updateItem(index: number, patch: Partial<CustomerOrderItem>) {
     setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
@@ -148,7 +184,8 @@ export function CustomerOrderForm() {
         },
         items: items.map((it) => {
           const cat = catalogue.find((c) => String(c.id) === it.catalogue_item_id);
-          const needsMeas = SERVICES_NEED_MEASUREMENTS.has(it.service_type);
+          const needsMeas = itemNeedsMeasurements(it.service_type, cat);
+          const includeMeas = needsMeas || hasMeasurementValues(measurements);
           return {
             catalogue_item_id: it.catalogue_item_id ? Number(it.catalogue_item_id) : null,
             catalogue_source: cat?.source ?? it.catalogue_source,
@@ -159,7 +196,7 @@ export function CustomerOrderForm() {
             quantity: it.quantity,
             item_notes: it.item_notes.trim(),
             requires_measurements: needsMeas,
-            measurements: needsMeas ? measPayload : {},
+            measurements: includeMeas ? measPayload : {},
           };
         }),
         due_date: dueDate || null,
@@ -171,7 +208,7 @@ export function CustomerOrderForm() {
         delivery_date: null,
         deposit_method: "",
         deposit_amount: "0",
-        measurements: needsMeasurements ? measPayload : {},
+        measurements: needsMeasurements || hasMeasurementValues(measurements) ? measPayload : {},
       });
       setSuccessOrderId(result.order_id);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -184,7 +221,7 @@ export function CustomerOrderForm() {
   if (successOrderId) {
     return (
       <div className="landing-root min-h-screen">
-        <LandingNavbar onOrderClick={() => {}} />
+        <LandingNavbar />
         <main className="mx-auto max-w-lg px-5 py-24 text-center">
           <div className="landing-feature-card p-8">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
@@ -211,7 +248,7 @@ export function CustomerOrderForm() {
 
   return (
     <div className="landing-root min-h-screen pb-16">
-      <LandingNavbar onOrderClick={() => window.scrollTo({ top: 0 })} />
+      <LandingNavbar />
 
       <main className="mx-auto max-w-2xl px-5 pt-24 sm:px-8">
         <Link href="/" className="text-sm text-[var(--landing-muted)] hover:text-[var(--landing-accent-deep)]">
@@ -374,7 +411,7 @@ export function CustomerOrderForm() {
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-medium text-[var(--landing-muted)]">Detalles del arreglo o confección</span>
+                    <span className="text-xs font-medium text-[var(--landing-muted)]">Detalles del arreglo</span>
                     <textarea
                       rows={3}
                       className="landing-input mt-1 resize-none"
@@ -399,6 +436,23 @@ export function CustomerOrderForm() {
           {step === 3 && (
             <div className="landing-order-card space-y-5">
               <h2 className="font-semibold text-[var(--landing-ink)]">Plazos y entrega</h2>
+
+              <InfoBubble title="Plazos de entrega">
+                <p>Cada prenda es distinta, así que el plazo depende del tipo de trabajo:</p>
+                <ul>
+                  <li>Arreglos sencillos (dobladillos, ajustes pequeños): 2–5 días laborables.</li>
+                  <li>Prendas con varios arreglos o trabajos más complejos: 4–8 días laborables.</li>
+                  <li>
+                    Servicio urgente: algunos arreglos, como dobladillos de pantalones, pueden entregarse el mismo día
+                    con un suplemento del 5&nbsp;% sobre el valor del arreglo.
+                  </li>
+                </ul>
+                <p>
+                  Paqui confirmará la fecha exacta y el presupuesto al revisar la prenda. Si tienes prisa, indícalo en
+                  las notas del pedido.
+                </p>
+              </InfoBubble>
+
               <label className="block">
                 <span className="text-xs font-medium text-[var(--landing-muted)]">¿Para cuándo lo necesitas?</span>
                 <input
@@ -443,46 +497,71 @@ export function CustomerOrderForm() {
                 ))}
               </div>
               {deliveryMethod === "home_delivery" && (
-                <label className="block">
-                  <span className="text-xs font-medium text-[var(--landing-muted)]">Dirección de entrega *</span>
-                  <input
-                    className="landing-input mt-1"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                  />
-                </label>
-              )}
-              {needsMeasurements && (
-                <div className="pt-2 border-t border-[var(--landing-border)]">
-                  <h3 className="text-sm font-semibold text-[var(--landing-ink)]">Medidas (cm) — opcional ahora</h3>
-                  <p className="text-xs text-[var(--landing-muted)] mt-1">
-                    Si no las tienes a mano, Paqui las tomará en el puesto.
-                  </p>
-                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {MEAS_FIELDS.map((f) => (
-                      <label key={f} className="block">
-                        <span className="text-xs text-[var(--landing-muted)]">{MEAS_LABELS[f]}</span>
-                        <input
-                          type="number"
-                          step="0.5"
-                          className="landing-input mt-1"
-                          value={measurements[f]}
-                          onChange={(e) => setMeasurements((p) => ({ ...p, [f]: e.target.value }))}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                  <label className="block mt-3">
-                    <span className="text-xs text-[var(--landing-muted)]">{MEAS_LABELS.notes}</span>
-                    <textarea
-                      rows={2}
-                      className="landing-input mt-1 resize-none"
-                      value={measurements.notes}
-                      onChange={(e) => setMeasurements((p) => ({ ...p, notes: e.target.value }))}
+                <>
+                  <InfoBubble>
+                    <p>
+                      <strong>¡Perfecto!</strong> Ten en cuenta que la entrega a domicilio lleva un pequeño coste
+                      adicional según la distancia. No te preocupes, Paqui te escribirá por WhatsApp en cuanto reciba
+                      tu pedido para darte todos los detalles y confirmar la entrega.
+                    </p>
+                  </InfoBubble>
+                  <label className="block">
+                    <span className="text-xs font-medium text-[var(--landing-muted)]">Dirección de entrega *</span>
+                    <input
+                      className="landing-input mt-1"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
                     />
                   </label>
-                </div>
+                </>
               )}
+              <div className="pt-2 border-t border-[var(--landing-border)] space-y-4">
+                <InfoBubble>
+                  <p>
+                    <strong>Las medidas son opcionales.</strong> Si no las conoces o no las tienes a mano, no te
+                    preocupes — Paqui las tomará en el taller cuando entregues la prenda.
+                  </p>
+                </InfoBubble>
+                {!showMeasurementsForm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowMeasurementsForm(true)}
+                    className="landing-btn landing-btn--ghost w-full min-h-12 text-sm font-medium"
+                  >
+                    Conozco mis medidas
+                  </button>
+                ) : (
+                  <>
+                    <h3 className="text-sm font-semibold text-[var(--landing-ink)]">Medidas (cm)</h3>
+                    <p className="text-xs text-[var(--landing-muted)]">
+                      Recomendadas para este tipo de servicio. Si no las tienes a mano, Paqui las tomará en el taller.
+                    </p>
+                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      {MEAS_FIELDS.map((f) => (
+                        <label key={f} className="block">
+                          <span className="text-xs text-[var(--landing-muted)]">{MEAS_LABELS[f]}</span>
+                          <input
+                            type="number"
+                            step="0.5"
+                            className="landing-input mt-1"
+                            value={measurements[f]}
+                            onChange={(e) => setMeasurements((p) => ({ ...p, [f]: e.target.value }))}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    <label className="block mt-3">
+                      <span className="text-xs text-[var(--landing-muted)]">{MEAS_LABELS.notes}</span>
+                      <textarea
+                        rows={2}
+                        className="landing-input mt-1 resize-none"
+                        value={measurements.notes}
+                        onChange={(e) => setMeasurements((p) => ({ ...p, notes: e.target.value }))}
+                      />
+                    </label>
+                  </>
+                )}
+              </div>
             </div>
           )}
 

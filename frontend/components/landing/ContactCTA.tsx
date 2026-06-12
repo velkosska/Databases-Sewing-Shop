@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ADDRESS, EMAIL, EMAIL_HREF, PHONE_DISPLAY, PHONE_HREF, WHATSAPP_URL } from "./constants";
-import { WhatsAppIcon } from "./icons";
+import { ADDRESS, EMAIL, EMAIL_HREF, INSTAGRAM_URL, PHONE_DISPLAY, PHONE_HREF, TIKTOK_URL, WHATSAPP_URL } from "./constants";
+import { InstagramIcon, TikTokIcon, WhatsAppIcon } from "./icons";
 import { useScrollReveal } from "./useScrollReveal";
 
 interface ContactCTAProps {
@@ -26,7 +26,7 @@ export function ContactCTA({ onOrderClick }: ContactCTAProps) {
           Pide tu presupuesto sin compromiso. Te respondemos en menos de 24 horas.
         </p>
 
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="mt-10 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4">
           <button type="button" onClick={onOrderClick} className="landing-btn landing-btn--primary min-h-12 w-full sm:w-auto px-10">
             Hacer pedido
           </button>
@@ -38,6 +38,24 @@ export function ContactCTA({ onOrderClick }: ContactCTAProps) {
           >
             <WhatsAppIcon className="w-5 h-5 text-[#25D366]" />
             WhatsApp
+          </a>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="landing-btn landing-btn--outline min-h-12 w-full sm:w-auto px-8 inline-flex items-center justify-center gap-2"
+          >
+            <InstagramIcon className="w-5 h-5 text-[#E1306C]" />
+            Instagram
+          </a>
+          <a
+            href={TIKTOK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="landing-btn landing-btn--outline min-h-12 w-full sm:w-auto px-8 inline-flex items-center justify-center gap-2"
+          >
+            <TikTokIcon className="w-5 h-5" />
+            TikTok
           </a>
         </div>
 

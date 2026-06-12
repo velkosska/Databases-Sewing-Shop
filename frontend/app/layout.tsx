@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     default: "Costuras de Paqui",
     template: "%s — Costuras de Paqui",
   },
-  description: "Arreglos y confecciones en Madrid.",
+  description: "Arreglos, bordados y tintorería en Madrid.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

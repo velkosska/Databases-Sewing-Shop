@@ -4,7 +4,7 @@ export const BUSINESS_NAME = "Costuras de Paqui";
 
 export const TAGLINE = "¡Dale una segunda oportunidad a tu ropa!";
 
-export const HERO_SUBTITLE = "Confección, arreglos y tintorería en Madrid";
+export const HERO_SUBTITLE = "Arreglos, bordados y tintorería en Madrid";
 
 export const CONTACT_NAME = "Paqui Espinosa";
 
@@ -22,34 +22,46 @@ export const WEBSITE_URL = "https://costuras-de-paqui.negocio.site";
 
 export const INSTAGRAM_URL = "https://www.instagram.com/costurasdepaqui/";
 
+export const TIKTOK_URL = "https://www.tiktok.com/@costuras_paqui1";
+
 export const ABOUT_BIO =
-  "Me dedico a confeccionar y a hacer arreglos de ropa en múltiples tejidos — textil, pieles y más. También confecciono cortinas, ropa de hogar y ropa de motoristas. Ofrecemos servicio de tintorería. En el mercado de San Enrique te atiendo con trato cercano y presupuesto claro antes de empezar.";
+  "Me dedico a arreglar y modificar ropa en múltiples tejidos — textil, pieles y más. También trabajo ropa de hogar (cojines, cortinas), ropa de motoristas, bordados y tintorería. En el Mercado Municipal de San Enrique te atiendo con trato cercano y presupuesto claro antes de empezar.";
 
 export const OPENING_HOURS = [
   { days: "Lunes a viernes", times: "8:00 – 14:00 · 15:00 – 20:30" },
   { days: "Sábados", times: "8:00 – 14:00 · 16:00 – 19:00" },
 ] as const;
 
+/** Matches shop/management/commands/seed_catalogue.py DEFAULT_CATALOGUE */
 export const SERVICES = [
   {
     title: "Arreglos de ropa",
-    description: "Cremalleras, dobladillos, roturas y ajustes en textil, pieles y otros tejidos.",
+    description:
+      "Arreglamos todo tipo de prendas en múltiples tejidos, incluida piel. Roturas, ajustes y transformaciones.",
   },
   {
-    title: "Confección a medida",
-    description: "Prendas hechas a tu medida, con acabado profesional y asesoramiento personal.",
+    title: "Arreglo de prendas de motoristas",
+    description: "Especialista en arreglo de equipamiento de motorista, incluida piel.",
   },
   {
-    title: "Cortinas",
-    description: "Confección de cortinas a medida para tu hogar o negocio.",
+    title: "Cambios de cremalleras",
+    description: "Sustitución y reparación de cremalleras en pantalones, chaquetas y más.",
   },
   {
-    title: "Ropa de hogar",
-    description: "Mantelería, fundas y textiles para el hogar confeccionados en el taller.",
+    title: "Bajos",
+    description: "Bajos de pantalones y otras prendas, con acabado limpio y duradero.",
   },
   {
-    title: "Ropa de motoristas",
-    description: "Arreglos y confección de equipamiento para motoristas.",
+    title: "Reducción de tallas",
+    description: "Ajuste y entallado de prendas para que te queden como deben.",
+  },
+  {
+    title: "Modificación de ropa de hogar",
+    description: "Customizamos y modificamos cojines, cortinas y más textiles del hogar.",
+  },
+  {
+    title: "Bordados",
+    description: "Bordados decorativos y personalizados para prendas y textiles.",
   },
   {
     title: "Tintorería",
